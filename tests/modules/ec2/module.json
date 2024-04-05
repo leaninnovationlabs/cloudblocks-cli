@@ -32,5 +32,14 @@
             "type": "bool",
             "description": "Whether to associate a public IP address with the instance"
         }
-    ]
+    ],
+    "actions": [{
+        "name": "create",
+        "description": "Create an EC2 instance",
+        "params": ["*"]
+    },{
+        "name": "update",
+        "description": "Update an EC2 instance",
+        "params": ["instance_type", "tags", "associate_public_ip_address"]
+    }]
 }
