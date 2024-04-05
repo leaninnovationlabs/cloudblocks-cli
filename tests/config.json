@@ -5,8 +5,8 @@
     "rootpath": "/Users/hunger/work/devops/cloudblocks-cli/tests",
     "env": {
         "dev": {
-            "bucket": "",
-            "region": ""
+            "bucket": "govpdfsandy",
+            "region": "us-east-1"
         }
     }
 }
