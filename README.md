@@ -146,6 +146,12 @@ The Cloudblocks CLI tool uses configuration files to store settings and module i
 - `modules.json`: Contains the list of available cloudblock modules, including their names and versions.
 - `workloads.json`: Stores the list of executed workloads and their associated metadata.
 
+
+## Building Go Binary
+You can use the following command to build the go binary:
+`go build -o tests/cloudblocks`
+
+
 ## Troubleshooting
 
 If you encounter any issues while using the Cloudblocks CLI tool, consider the following:
