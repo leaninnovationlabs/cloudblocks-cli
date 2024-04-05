@@ -1,0 +1,30 @@
+{
+    "name": "test2",
+    "uuid": "9188c324-3b7b-4df8-969f-4b0c73d87b0d",
+    "run_id": "abc1234",
+    "cloudblock": {
+        "name": "eks",
+        "version": "1.0.0",
+        "runtime": "terraform"
+    },
+    "description": "This is a test workload",
+    "env": "test",
+    "config": {
+        "cluster_name": "andy",
+        "cluster_version": "1.29",
+        "cluster_public_access": true,
+        "subnet_ids": ["subnet-0932f1493987e07aa", "subnet-0d351759e83941608", "subnet-08adf97ff8edbe73e"],
+        "control_plane_subnets": ["subnet-0489e7a67468e5c51", "subnet-0bb41476984c7b576", "subnet-02d5811cd0f93ea70"],
+        "vpc_id": "vpc-0a55b2997d9e07b8e",
+        "min_size": 1,
+        "max_size": 3,
+        "desired_size": 1,
+        "capacity_type": "SPOT",
+        "enable_creator_admin_perm": true,
+        "instance_type": "t3.micro",
+        "tags": {
+            "name": "pizza",
+            "env": "balogna"
+        }
+    }
+}

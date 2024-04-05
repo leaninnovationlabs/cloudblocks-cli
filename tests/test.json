@@ -1,0 +1,20 @@
+{
+    "name": "test2",
+    "uuid": "9188c324-3b7b-4df8-969f-4b0c73d87b0d",
+    "run_id": "abc12345",
+    "cloudblock": {
+        "name": "ec2",
+        "version": "1.0.0",
+        "runtime": "terraform"
+    },
+    "description": "This is a test workload",
+    "env": "test",
+    "config": {
+        "subnet_id": "subnet-08adf97ff8edbe73e",
+        "instance_type": "t3.micro",
+        "ami": "ami-0d7a109bf30624c99",
+        "tags": "{\"name\": \"pizza\", \"env\":\"balogna\"}",
+        "associate_public_ip_address": "true",
+        "user_data": "../../../script.sh"
+    }
+}
