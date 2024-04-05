@@ -4,8 +4,7 @@
     "run_id": "abc12345",
     "cloudblock": {
         "name": "ec2",
-        "version": "1.0.0",
-        "runtime": "terraform"
+        "version": "1.0.0"
     },
     "description": "This is a test workload",
     "env": "test",
