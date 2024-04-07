@@ -206,10 +206,8 @@ func ListCommand(cmd *cobra.Command, wg *sync.WaitGroup, resultCh chan<- executo
 		os.Exit(1)
 	}
 
-	cloudblocksManager := config.NewCloudblocksManager("modules.json")
-
 	// Load the cloudblocks list
-	cloudblocksList, err := cloudblocksManager.LoadModulesList()
+	cloudblocksList, err := configManager.LoadModulesList()
 	if err != nil {
 		fmt.Println("Error loading cloudblocks list:", err)
 		resultCh <- executors.ExecutorOutput{Success: false, Error: err}
