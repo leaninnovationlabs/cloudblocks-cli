@@ -13,6 +13,7 @@ type Config struct {
 	Modulesdirectory  string               `json:"modulesdir"`
 	RootPath          string               `json:"rootpath"`
 	Env               map[string]EnvConfig `json:"env"`
+	ModulesList       ModulesList          `json:"modules"`
 }
 
 type ConfigManager interface {
@@ -29,6 +30,11 @@ type ConfigManager interface {
 	AddEnvironment(string, string, string) error
 	DeleteEnvironment(string) error
 	ListEnvironments() ([]EnvInfo, error)
+	InitializeCloudblocksList() error
+	UpdateCloudblocksList(cloudblocks []CloudblockConfig) error
+	DeleteCloudblock(name string) error
+	GetCloudblockByName(name string) (CloudblockConfig, error)
+	LoadModulesList() (ModulesList, error)
 }
 
 type ConfigManagerImpl struct {
@@ -60,22 +66,6 @@ type EnvInfo struct {
 
 type ModulesList struct {
 	Cloudblocks []CloudblockConfig `json:"modules"`
-}
-
-type CloudblocksManager interface {
-	InitializeCloudblocksList() error
-	WriteCloudblocksFile() error
-	VerifyCloudblocksList() bool
-	UpdateCloudblocksList(cloudblocks []CloudblockConfig) error
-	DeleteCloudblock(name string) error
-	GetCloudblockByName(name string) (CloudblockConfig, error)
-	LoadModulesList() (ModulesList, error)
-	SaveModulesList(modulesList ModulesList) error
-	// Add more methods as needed
-}
-
-type CloudblocksManagerImpl struct {
-	cloudblocksFile string
 }
 
 func NewConfigManager(configFile string) ConfigManager {
@@ -250,6 +240,9 @@ func (cm *ConfigManagerImpl) InitializeConfig() error {
 				Bucket: "",
 				Region: "",
 			}}
+		config.ModulesList = ModulesList{
+			Cloudblocks: []CloudblockConfig{},
+		}
 		return cm.SaveConfig(config)
 	}
 
@@ -295,59 +288,40 @@ func (cm *ConfigManagerImpl) IsInitialized() bool {
 //***********************************************************************************************************
 // modules config file related functions
 
-func NewCloudblocksManager(cloudblocksFile string) CloudblocksManager {
-	return &CloudblocksManagerImpl{
-		cloudblocksFile: cloudblocksFile,
+func (cm *ConfigManagerImpl) InitializeCloudblocksList() error {
+	config, err := cm.LoadConfig()
+	if err != nil {
+		return err
 	}
-}
 
-func (cm *CloudblocksManagerImpl) InitializeCloudblocksList() error {
-	// Check if the cloudblocks file exists, if not, create it with an empty list
-	if _, err := os.Stat(cm.cloudblocksFile); os.IsNotExist(err) {
-		cloudblocksList := ModulesList{
-			Cloudblocks: []CloudblockConfig{},
-		}
-		return cm.SaveModulesList(cloudblocksList)
+	if config.ModulesList.Cloudblocks == nil {
+		config.ModulesList.Cloudblocks = []CloudblockConfig{}
+		return cm.SaveConfig(config)
 	}
+
 	return nil
 }
 
-func (cm *CloudblocksManagerImpl) WriteCloudblocksFile() error {
-	// Check if the cloudblocks file exists, if not, create it with an empty list
-	if _, err := os.Stat(cm.cloudblocksFile); os.IsNotExist(err) {
-		cloudblocksList := ModulesList{
-			Cloudblocks: []CloudblockConfig{},
-		}
-		return cm.SaveModulesList(cloudblocksList)
+func (cm *ConfigManagerImpl) UpdateCloudblocksList(cloudblocks []CloudblockConfig) error {
+	config, err := cm.LoadConfig()
+	if err != nil {
+		return err
 	}
-	return nil
+
+	config.ModulesList.Cloudblocks = cloudblocks
+	return cm.SaveConfig(config)
 }
 
-func (cm *CloudblocksManagerImpl) VerifyCloudblocksList() bool {
-	// Check if the cloudblocks file exists
-	if _, err := os.Stat(cm.cloudblocksFile); os.IsNotExist(err) {
-		return false
-	}
-	return true
-}
-
-func (cm *CloudblocksManagerImpl) UpdateCloudblocksList(cloudblocks []CloudblockConfig) error {
-	cloudblocksList := ModulesList{
-		Cloudblocks: cloudblocks,
-	}
-	return cm.SaveModulesList(cloudblocksList)
-}
-
-func (cm *CloudblocksManagerImpl) DeleteCloudblock(name string) error {
-	cloudblocksList, err := cm.LoadModulesList()
+func (cm *ConfigManagerImpl) DeleteCloudblock(name string) error {
+	config, err := cm.LoadConfig()
 	if err != nil {
 		return err
 	}
 
 	found := false
-	for i, cloudblock := range cloudblocksList.Cloudblocks {
+	for i, cloudblock := range config.ModulesList.Cloudblocks {
 		if cloudblock.Name == name {
-			cloudblocksList.Cloudblocks = append(cloudblocksList.Cloudblocks[:i], cloudblocksList.Cloudblocks[i+1:]...)
+			config.ModulesList.Cloudblocks = append(config.ModulesList.Cloudblocks[:i], config.ModulesList.Cloudblocks[i+1:]...)
 			found = true
 			break
 		}
@@ -357,16 +331,16 @@ func (cm *CloudblocksManagerImpl) DeleteCloudblock(name string) error {
 		return fmt.Errorf("cloudblock with name '%s' not found", name)
 	}
 
-	return cm.SaveModulesList(cloudblocksList)
+	return cm.SaveConfig(config)
 }
 
-func (cm *CloudblocksManagerImpl) GetCloudblockByName(name string) (CloudblockConfig, error) {
-	cloudblocksList, err := cm.LoadModulesList()
+func (cm *ConfigManagerImpl) GetCloudblockByName(name string) (CloudblockConfig, error) {
+	config, err := cm.LoadConfig()
 	if err != nil {
 		return CloudblockConfig{}, err
 	}
 
-	for _, cloudblock := range cloudblocksList.Cloudblocks {
+	for _, cloudblock := range config.ModulesList.Cloudblocks {
 		if cloudblock.Name == name {
 			return cloudblock, nil
 		}
@@ -375,35 +349,11 @@ func (cm *CloudblocksManagerImpl) GetCloudblockByName(name string) (CloudblockCo
 	return CloudblockConfig{}, fmt.Errorf("cloudblock with name '%s' not found", name)
 }
 
-func (cm *CloudblocksManagerImpl) LoadModulesList() (ModulesList, error) {
-	file, err := os.Open(cm.cloudblocksFile)
-	if err != nil {
-		return ModulesList{}, err
-	}
-	defer file.Close()
-
-	var cloudblocksList ModulesList
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&cloudblocksList)
+func (cm *ConfigManagerImpl) LoadModulesList() (ModulesList, error) {
+	config, err := cm.LoadConfig()
 	if err != nil {
 		return ModulesList{}, err
 	}
 
-	return cloudblocksList, nil
-}
-
-func (cm *CloudblocksManagerImpl) SaveModulesList(cloudblocksList ModulesList) error {
-	file, err := os.OpenFile(cm.cloudblocksFile, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(cloudblocksList)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return config.ModulesList, nil
 }

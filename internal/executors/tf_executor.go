@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"cloudblockscli.com/internal/config"
-	"cloudblockscli.com/internal/utils"
+	// "cloudblockscli.com/internal/utils"
 	// "cloudblockscli.com/internal/workload"
 )
 
@@ -240,22 +240,6 @@ func Delete(ctx context.Context, cfmgr config.ConfigManager, input ExecutorInput
 	if !result.Success {
 		return result, result.Error
 	}
-
-	// TO DO: Make new RunID and copy main.tf to it before running terraform destroy
-	newRunID := utils.GenerateUUID()
-
-	err := utils.CreateWorkDir(cfmgr, newRunID)
-	if err != nil {
-		return ExecutorOutput{Success: false, Error: fmt.Errorf("failed to create new run directory: %v", err)}, err
-	}
-
-	err = CopyMainFile(workdir, input.RunID, newRunID)
-	if err != nil {
-		return ExecutorOutput{Success: false, Error: fmt.Errorf("failed to copy main.tf file: %v", err)}, err
-	}
-
-	// make sure we're doing destroy on the copied main.tf
-	input.RunID = newRunID
 
 	// Run "terraform destroy"
 	result = RunTfDestroy(ctx, workdir, input)

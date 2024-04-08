@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize cloudblocks",
-	Long:  `Initializes the cloudblocks environment by creating the work and modules directories and the workloads.json and modules.json files.`,
+	Long:  `Initializes the cloudblocks environment by creating the work and modules directories and the config.json file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// get the workdir and modulesdir flags
 		workDir, _ := cmd.Flags().GetString("workdir")
@@ -70,12 +70,9 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// create cloudblocks manager
-		cloudblocksManager := config.NewCloudblocksManager("modules.json")
-		cloudblocksManager.WriteCloudblocksFile()
-		err = cloudblocksManager.InitializeCloudblocksList()
+		err = configManager.InitializeCloudblocksList()
 		if err != nil {
-			fmt.Println("Error initializing modules.json:", err)
+			fmt.Println("Error initializing cloudblocks list:", err)
 			os.Exit(1)
 		}
 
@@ -184,9 +181,9 @@ var modulesCmd = &cobra.Command{
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new cloudblock module",
-	Long:  "Adds a new cloudblock module to the modules.json file.",
+	Long:  "Adds a new cloudblock module to the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		cloudblocksManager := config.NewCloudblocksManager("modules.json")
+		configManager := config.NewConfigManager("config.json")
 
 		// Get the name and version from the command line flags
 		name, _ := cmd.Flags().GetString("name")
@@ -198,20 +195,20 @@ var addCmd = &cobra.Command{
 			Version: version,
 		}
 
-		// Load the existing cloudblocks list
-		cloudblocksList, err := cloudblocksManager.LoadModulesList()
+		// Load the existing config
+		cfg, err := configManager.LoadConfig()
 		if err != nil {
-			fmt.Println("Error loading cloudblocks list:", err)
+			fmt.Println("Error loading config:", err)
 			os.Exit(1)
 		}
 
 		// Append the new cloudblock to the list
-		cloudblocksList.Cloudblocks = append(cloudblocksList.Cloudblocks, cloudblock)
+		cfg.ModulesList.Cloudblocks = append(cfg.ModulesList.Cloudblocks, cloudblock)
 
-		// Save the updated cloudblocks list
-		err = cloudblocksManager.SaveModulesList(cloudblocksList)
+		// Save the updated config
+		err = configManager.SaveConfig(cfg)
 		if err != nil {
-			fmt.Println("Error saving cloudblocks list:", err)
+			fmt.Println("Error saving config:", err)
 			os.Exit(1)
 		}
 
@@ -222,26 +219,26 @@ var addCmd = &cobra.Command{
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update an existing cloudblock module",
-	Long:  "Updates an existing cloudblock module in the modules.json file.",
+	Long:  "Updates an existing cloudblock module in the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		cloudblocksManager := config.NewCloudblocksManager("modules.json")
+		configManager := config.NewConfigManager("config.json")
 
 		// Get the name and version from the command line flags
 		name, _ := cmd.Flags().GetString("name")
 		version, _ := cmd.Flags().GetString("version")
 
-		// Load the existing cloudblocks list
-		cloudblocksList, err := cloudblocksManager.LoadModulesList()
+		// Load the existing config
+		cfg, err := configManager.LoadConfig()
 		if err != nil {
-			fmt.Println("Error loading cloudblocks list:", err)
+			fmt.Println("Error loading config:", err)
 			os.Exit(1)
 		}
 
 		// Find the cloudblock with the specified name and update its version
 		updated := false
-		for i, cloudblock := range cloudblocksList.Cloudblocks {
+		for i, cloudblock := range cfg.ModulesList.Cloudblocks {
 			if cloudblock.Name == name {
-				cloudblocksList.Cloudblocks[i].Version = version
+				cfg.ModulesList.Cloudblocks[i].Version = version
 				updated = true
 				break
 			}
@@ -252,10 +249,10 @@ var updateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Save the updated cloudblocks list
-		err = cloudblocksManager.SaveModulesList(cloudblocksList)
+		// Save the updated config
+		err = configManager.SaveConfig(cfg)
 		if err != nil {
-			fmt.Println("Error saving cloudblocks list:", err)
+			fmt.Println("Error saving config:", err)
 			os.Exit(1)
 		}
 
@@ -266,15 +263,15 @@ var updateCmd = &cobra.Command{
 var deleteModuleCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete a cloudblock module",
-	Long:  "Deletes a cloudblock module from the modules.json file.",
+	Long:  "Deletes a cloudblock module from the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		cloudblocksManager := config.NewCloudblocksManager("modules.json")
+		configManager := config.NewConfigManager("config.json")
 
 		// Get the name from the command line flag
 		name, _ := cmd.Flags().GetString("name")
 
 		// Delete the cloudblock
-		err := cloudblocksManager.DeleteCloudblock(name)
+		err := configManager.DeleteCloudblock(name)
 		if err != nil {
 			fmt.Println("Error deleting cloudblock:", err)
 			os.Exit(1)
@@ -286,8 +283,8 @@ var deleteModuleCmd = &cobra.Command{
 
 var listWorkloadsCmd = &cobra.Command{
 	Use:   "list-workloads",
-	Short: "List cloudblock modules",
-	Long:  "Lists the contents of the modules.json file in JSON format.",
+	Short: "List cloudblock workloads",
+	Long:  "Lists the available workloads.",
 	Run: func(cmd *cobra.Command, args []string) {
 		var wg sync.WaitGroup
 		resultCh := make(chan executors.ExecutorOutput)
@@ -313,7 +310,7 @@ var listWorkloadsCmd = &cobra.Command{
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available cloudblocks",
-	Long:  "Reads the content of workloads.json and lists the available cloudblocks.",
+	Long:  "Lists the available cloudblocks from the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
 		var wg sync.WaitGroup
 		resultCh := make(chan executors.ExecutorOutput)
