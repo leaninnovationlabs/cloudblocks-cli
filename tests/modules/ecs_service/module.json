@@ -1,0 +1,215 @@
+{
+  "name": "ecs_service",
+  "runtime": "terraform",
+  "params": [
+    {
+      "name": "aws_region",
+      "type": "string",
+      "description": "AWS region"
+    },
+    {
+      "name": "default_vpc_id",
+      "type": "string",
+      "description": "Default vpc id"
+    },
+    {
+      "name": "subnet_ids",
+      "type": "list(string)",
+      "description": "The subnet to launch the ECS into"
+    },
+    {
+      "name": "log_group_name",
+      "type": "string",
+      "description": "Log Group Name"
+    },
+    {
+      "name": "log_group_tags",
+      "type": "map(any)",
+      "description": "The tags to apply to the EC2 instance",
+      "default": "{}"
+    },
+    {
+      "name": "task_def_family",
+      "type": "string",
+      "description": "Task Definition Name"
+    },
+    {
+      "name": "task_role_arn",
+      "type": "string",
+      "description": "Task Definition Role ARN"
+    },
+    {
+      "name": "task_exec_role_arn",
+      "type": "string",
+      "description": "Task Definition Execution Role ARN"
+    },
+    {
+      "name": "task_def_cpu",
+      "type": "string",
+      "description": "Task Definition CPU"
+    },
+    {
+      "name": "task_def_memory",
+      "type": "string",
+      "description": "Task Definition Memory"
+    },
+    {
+      "name": "container_definitions_path",
+      "type": "string",
+      "description": "Task Definition container defintion paths",
+      "default": ""
+    },
+    {
+      "name": "app_container_name",
+      "type": "string",
+      "description": "Task Definition Application Container Name"
+    },
+    {
+      "name": "app_container_image",
+      "type": "string",
+      "description": "Application Container image"
+    },
+    {
+      "name": "cont_health_check_config",
+      "type": "object({ command = list(string), interval = number, timeout = number, retries = number })",
+      "description": "Container Health Check Configurations",
+      "default": "null"
+    },
+    {
+      "name": "app_port_mappings",
+      "type": "list(any)",
+      "description": "Port Mappings"
+    },
+    {
+      "name": "env_variables",
+      "type": "list(any)",
+      "description": "Environment Variables"
+    },
+    {
+      "name": "log_stream_prefix",
+      "type": "string",
+      "description": "Log Stream prefix"
+    },
+    {
+      "name": "task_def_tags",
+      "type": "map(any)",
+      "description": "Task Definition tags",
+      "default": {}
+    },
+    {
+      "name": "target_group_name",
+      "type": "string",
+      "description": "Target Group Name"
+    },
+    {
+      "name": "tg_health_check_path",
+      "type": "string",
+      "description": "Target Group Health Check Path"
+    },
+    {
+      "name": "tg_health_timeout",
+      "type": "number",
+      "description": "Target Group Health Check timout",
+      "default": 50
+    },
+    {
+      "name": "tg_health_interval",
+      "type": "number",
+      "description": "Target Group Health Check interval",
+      "default": 59
+    },
+    {
+      "name": "target_group_protocol",
+      "type": "string",
+      "description": "Target Group protocol",
+      "default": "HTTPS"
+    },
+    {
+      "name": "target_group_port",
+      "type": "number",
+      "description": "Target Group port",
+      "default": 8443
+    },
+    {
+      "name": "tg_health_check_port",
+      "type": "string",
+      "description": "Target Group NameTarget Group Health Check Port",
+      "default": "traffic-port"
+    },
+    {
+      "name": "tg_health_check_protocol",
+      "type": "string",
+      "description": "Target Group Health Check Path",
+      "default": "HTTPS"
+    },
+    {
+      "name": "target_group_tags",
+      "type": "map(any)",
+      "description": "Target Group Name",
+      "default": {}
+    },
+    {
+      "name": "listener_arn",
+      "type": "string",
+      "description": "Listener Rule ARN"
+    },
+    {
+      "name": "listener_conditions",
+      "type": "list(any)",
+      "description": "Listener Conditions"
+    },
+    {
+      "name": "ecs_service_name",
+      "type": "string",
+      "description": "ECS Fargate Service name"
+    },
+    {
+      "name": "ecs_sg_name",
+      "type": "string",
+      "description": "ECS Fargate Service Security Group name"
+    },
+    {
+      "name": "ecs_sg_ingress_rules",
+      "type": "list(any)",
+      "description": "Ingress security group rules"
+    },
+    {
+      "name": "ecs_sg_egress_rules",
+      "type": "list(any)",
+      "description": "Egress security group rules"
+    },
+    {
+      "name": "assign_public_ip",
+      "type": "bool",
+      "description": "Assign public id for ECS service"
+    },
+    {
+      "name": "cluster_id",
+      "type": "string",
+      "description": "Cluster id"
+    },
+    {
+      "name": "desired_count",
+      "type": "number",
+      "description": "Desired count for ECS service",
+      "default": 1
+    },
+    {
+      "name": "alb_security_group",
+      "type": "string",
+      "description": "Security group id for ALB"
+    },
+    {
+      "name": "container_port",
+      "type": "string",
+      "description": "Please provide the contianer port",
+      "default": 8443
+    },
+    {
+      "name": "ecs_tags",
+      "type": "map(any)",
+      "description": "Tags for ECS",
+      "default": {}
+    }
+  ]
+}
