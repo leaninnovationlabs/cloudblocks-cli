@@ -1,2 +1,9 @@
 work
 tests/cloudblocks
+
+#terraform
+.terraform/
+.vagrant/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl

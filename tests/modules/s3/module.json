@@ -1,0 +1,25 @@
+{
+    "name": "s3",
+    "runtime": "terraform",
+    "params": [
+        {
+            "name": "name",
+            "type": "string",
+            "description": "The unique name for the S3 bucket"
+        },
+        {
+            "name": "tags",
+            "type": "map(string)",
+            "description": "The tags to apply to the s3 bucket"
+        }
+    ],
+    "actions": [{
+        "name": "create",
+        "description": "Create an EC2 instance",
+        "params": ["*"]
+    },{
+        "name": "update",
+        "description": "Update an EC2 instance",
+        "params": ["instance_type", "tags", "associate_public_ip_address"]
+    }]
+}
