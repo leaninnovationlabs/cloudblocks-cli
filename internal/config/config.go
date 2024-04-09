@@ -34,6 +34,7 @@ type ConfigManager interface {
 	UpdateCloudblocksList(cloudblocks []CloudblockConfig) error
 	DeleteCloudblock(name string) error
 	GetCloudblockByName(name string) (CloudblockConfig, error)
+	GetModuleConfig(moduleName string) (ModuleConfig, error)
 	LoadModulesList() ([]CloudblockConfig, error)
 }
 
@@ -47,10 +48,22 @@ type CloudblockConfig struct {
 }
 
 type ModuleConfig struct {
-	Name    string                 `json:"name"`
-	Type    string                 `json:"type"`
-	Version string                 `json:"version"`
-	Params  map[string]interface{} `json:"params"`
+	Name    string         `json:"name"`
+	Runtime string         `json:"runtime"`
+	Params  []ModuleParam  `json:"params"`
+	Actions []ModuleAction `json:"actions"`
+}
+
+type ModuleParam struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
+
+type ModuleAction struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Params      []string `json:"params"`
 }
 
 type EnvConfig struct {
@@ -101,6 +114,28 @@ func (cm *ConfigManagerImpl) LoadConfig() (Config, error) {
 	}
 
 	return config, nil
+}
+
+func (cm *ConfigManagerImpl) GetModuleConfig(moduleName string) (ModuleConfig, error) {
+	modulesDir := cm.GetModulesDir()
+	moduleConfigPath := filepath.Join(modulesDir, moduleName, "module.json")
+	fmt.Println(moduleConfigPath)
+	fmt.Println(moduleName)
+
+	file, err := os.Open(moduleConfigPath)
+	if err != nil {
+		return ModuleConfig{}, fmt.Errorf("error opening module.json for module %s: %v", moduleName, err)
+	}
+	defer file.Close()
+
+	var moduleConfig ModuleConfig
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&moduleConfig)
+	if err != nil {
+		return ModuleConfig{}, fmt.Errorf("error decoding module.json for module %s: %v", moduleName, err)
+	}
+
+	return moduleConfig, nil
 }
 
 func (cm *ConfigManagerImpl) GetBucketByEnv(env string) string {

@@ -14,7 +14,7 @@ import (
 	"cloudblockscli.com/internal/workload"
 )
 
-const templateFileName = "/module_template.hcl"
+const templateFileName = "/module_template"
 
 var configManger = config.NewConfigManager("config.json")
 
@@ -28,7 +28,7 @@ type VariablesJSON struct {
 	Variables []TerraformVariable `json:"variables"`
 }
 
-func ReadTemplateTf(configManager config.ConfigManager, moduleName string) ([]byte, error) {
+func ReadTemplate(configManager config.ConfigManager, moduleName string) ([]byte, error) {
 	filePath := configManager.GetModulesDir() + "/" + moduleName + templateFileName
 	mainTf, err := os.ReadFile(filePath)
 	if err != nil {
@@ -92,6 +92,29 @@ func ReplaceVariables(mainTf []byte, variables map[string]interface{}) []byte {
 	return mainTf
 }
 
+func WriteMakeFile(configManager config.ConfigManager, mainTf []byte, workloadName string, runID string) error {
+	if !utils.CheckWorkDir(configManager, workloadName) {
+		err := utils.CreateWorkDir(configManager, workloadName)
+		if err != nil {
+			return fmt.Errorf("error creating work directory: %v", err)
+		}
+	}
+
+	runDir := configManager.GetWorkDir() + "/" + workloadName + "/" + runID
+	err := os.MkdirAll(runDir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("error creating run directory: %v", err)
+	}
+
+	filePath := runDir + "/Makefile"
+	fmt.Printf("Writing main.make to %s\n", filePath)
+	err = os.WriteFile(filePath, mainTf, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing main.make: %v", err)
+	}
+	return nil
+}
+
 func WriteMainTf(configManager config.ConfigManager, mainTf []byte, workloadName string, runID string) error {
 	if !utils.CheckWorkDir(configManager, workloadName) {
 		err := utils.CreateWorkDir(configManager, workloadName)
@@ -119,7 +142,52 @@ func ProcessConfig(configManager config.ConfigManager, wl *workload.Workload) er
 	moduleName := wl.GetModuleName()
 	workloadName := wl.GetUUID()
 	runID := wl.GetRunId()
-	mainTf, err := ReadTemplateTf(configManager, moduleName)
+
+	moduleConfig, err := configManager.GetModuleConfig(moduleName)
+	if err != nil {
+		return err
+	}
+
+	switch moduleConfig.Runtime {
+	case "terraform":
+		return processTerraformConfig(configManager, wl, moduleConfig, workloadName, runID)
+	case "cmd":
+		return processCMDConfig(configManager, wl, moduleConfig, workloadName, runID)
+	default:
+		return fmt.Errorf("unsupported runtime: %s", moduleConfig.Runtime)
+	}
+}
+
+func processCMDConfig(configManager config.ConfigManager, wl *workload.Workload, moduleConfig config.ModuleConfig, workloadName, runID string) error {
+	mainTf, err := ReadTemplate(configManager, moduleConfig.Name)
+	if err != nil {
+		return err
+	}
+
+	variables := wl.GetVariables()
+	updatedMake := ReplaceVariables(mainTf, variables)
+	fmt.Printf("Updated main.make: %s\n", updatedMake)
+
+	// updatedMainTf = addSourceBlock(configManager, wl, updatedMainTf)
+	// updatedMainTf = AddBackendBlock(configManager, wl, updatedMainTf)
+
+	err = WriteMakeFile(configManager, updatedMake, workloadName, runID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addSourceBlock(configManager config.ConfigManager, wl *workload.Workload, mainTf []byte) []byte {
+	moduleDir := configManager.GetModulesDir()
+	cloudblockName := wl.GetModuleName()
+	sourceBlock := fmt.Sprintf(`"%s/%s"`, moduleDir, cloudblockName)
+	return bytes.ReplaceAll(mainTf, []byte("$MODULES_SOURCE"), []byte(sourceBlock))
+}
+
+func processTerraformConfig(configManager config.ConfigManager, wl *workload.Workload, moduleConfig config.ModuleConfig, workloadName, runID string) error {
+	mainTf, err := ReadTemplate(configManager, moduleConfig.Name)
 	if err != nil {
 		return err
 	}
@@ -128,12 +196,7 @@ func ProcessConfig(configManager config.ConfigManager, wl *workload.Workload) er
 	updatedMainTf := ReplaceVariables(mainTf, variables)
 	fmt.Printf("Updated main.tf: %s\n", updatedMainTf)
 
-	// Add the source block inside the module code
-	moduleDir := configManager.GetModulesDir()
-	cloudblockName := wl.GetModuleName()
-	sourceBlock := fmt.Sprintf(`"%s/%s"`, moduleDir, cloudblockName)
-	updatedMainTf = bytes.ReplaceAll(updatedMainTf, []byte("$MODULES_SOURCE"), []byte(sourceBlock))
-
+	updatedMainTf = addSourceBlock(configManager, wl, updatedMainTf)
 	updatedMainTf = AddBackendBlock(configManager, wl, updatedMainTf)
 
 	err = WriteMainTf(configManager, updatedMainTf, workloadName, runID)
