@@ -128,6 +128,12 @@ func ProcessConfig(configManager config.ConfigManager, wl *workload.Workload) er
 	updatedMainTf := ReplaceVariables(mainTf, variables)
 	fmt.Printf("Updated main.tf: %s\n", updatedMainTf)
 
+	// Add the source block inside the module code
+	moduleDir := configManager.GetModulesDir()
+	cloudblockName := wl.GetModuleName()
+	sourceBlock := fmt.Sprintf(`"%s/%s"`, moduleDir, cloudblockName)
+	updatedMainTf = bytes.ReplaceAll(updatedMainTf, []byte("$MODULES_SOURCE"), []byte(sourceBlock))
+
 	updatedMainTf = AddBackendBlock(configManager, wl, updatedMainTf)
 
 	err = WriteMainTf(configManager, updatedMainTf, workloadName, runID)
