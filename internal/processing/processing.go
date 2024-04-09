@@ -158,6 +158,36 @@ func ProcessConfig(configManager config.ConfigManager, wl *workload.Workload) er
 	}
 }
 
+func ReplaceVariablesForCmd(mainTf []byte, variables map[string]interface{}) []byte {
+	for k, v := range variables {
+		placeholder := "$" + strings.ToUpper(k)
+
+		switch value := v.(type) {
+		case string:
+			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(value))
+		case bool:
+			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatBool(value)))
+		case float64:
+			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatFloat(value, 'f', -1, 64)))
+		case []interface{}:
+			listValue := make([]string, len(value))
+			for i, item := range value {
+				listValue[i] = fmt.Sprintf("%v", item)
+			}
+			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strings.Join(listValue, " ")))
+		case map[string]interface{}:
+			mapValue := make([]string, 0, len(value))
+			for mapKey, mapVal := range value {
+				mapValue = append(mapValue, fmt.Sprintf("%s=%v", mapKey, mapVal))
+			}
+			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strings.Join(mapValue, " ")))
+		default:
+			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("%v", v)))
+		}
+	}
+	return mainTf
+}
+
 func processCMDConfig(configManager config.ConfigManager, wl *workload.Workload, moduleConfig config.ModuleConfig, workloadName, runID string) error {
 	mainTf, err := ReadTemplate(configManager, moduleConfig.Name)
 	if err != nil {
@@ -165,11 +195,8 @@ func processCMDConfig(configManager config.ConfigManager, wl *workload.Workload,
 	}
 
 	variables := wl.GetVariables()
-	updatedMake := ReplaceVariables(mainTf, variables)
-	fmt.Printf("Updated main.make: %s\n", updatedMake)
-
-	// updatedMainTf = addSourceBlock(configManager, wl, updatedMainTf)
-	// updatedMainTf = AddBackendBlock(configManager, wl, updatedMainTf)
+	updatedMake := ReplaceVariablesForCmd(mainTf, variables)
+	fmt.Printf("Updated Makefile: %s\n", updatedMake)
 
 	err = WriteMakeFile(configManager, updatedMake, workloadName, runID)
 	if err != nil {
