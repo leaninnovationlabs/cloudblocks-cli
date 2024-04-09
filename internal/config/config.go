@@ -13,7 +13,7 @@ type Config struct {
 	Modulesdirectory  string               `json:"modulesdir"`
 	RootPath          string               `json:"rootpath"`
 	Env               map[string]EnvConfig `json:"env"`
-	ModulesList       ModulesList          `json:"modules"`
+	ModulesList       []CloudblockConfig   `json:"modules"`
 }
 
 type ConfigManager interface {
@@ -34,7 +34,7 @@ type ConfigManager interface {
 	UpdateCloudblocksList(cloudblocks []CloudblockConfig) error
 	DeleteCloudblock(name string) error
 	GetCloudblockByName(name string) (CloudblockConfig, error)
-	LoadModulesList() (ModulesList, error)
+	LoadModulesList() ([]CloudblockConfig, error)
 }
 
 type ConfigManagerImpl struct {
@@ -85,6 +85,8 @@ func (cm *ConfigManagerImpl) LoadConfig() (Config, error) {
 				Workloaddirectory: path + "/work",
 				Modulesdirectory:  path + "/modules",
 				RootPath:          path,
+				Env:               map[string]EnvConfig{},
+				ModulesList:       []CloudblockConfig{},
 			}, nil
 		}
 		return Config{}, err
@@ -240,9 +242,7 @@ func (cm *ConfigManagerImpl) InitializeConfig() error {
 				Bucket: "",
 				Region: "",
 			}}
-		config.ModulesList = ModulesList{
-			Cloudblocks: []CloudblockConfig{},
-		}
+		config.ModulesList = []CloudblockConfig{}
 		return cm.SaveConfig(config)
 	}
 
@@ -285,17 +285,14 @@ func (cm *ConfigManagerImpl) IsInitialized() bool {
 	return config.Initialized
 }
 
-//***********************************************************************************************************
-// modules config file related functions
-
 func (cm *ConfigManagerImpl) InitializeCloudblocksList() error {
 	config, err := cm.LoadConfig()
 	if err != nil {
 		return err
 	}
 
-	if config.ModulesList.Cloudblocks == nil {
-		config.ModulesList.Cloudblocks = []CloudblockConfig{}
+	if config.ModulesList == nil {
+		config.ModulesList = []CloudblockConfig{}
 		return cm.SaveConfig(config)
 	}
 
@@ -308,7 +305,7 @@ func (cm *ConfigManagerImpl) UpdateCloudblocksList(cloudblocks []CloudblockConfi
 		return err
 	}
 
-	config.ModulesList.Cloudblocks = cloudblocks
+	config.ModulesList = cloudblocks
 	return cm.SaveConfig(config)
 }
 
@@ -319,9 +316,9 @@ func (cm *ConfigManagerImpl) DeleteCloudblock(name string) error {
 	}
 
 	found := false
-	for i, cloudblock := range config.ModulesList.Cloudblocks {
+	for i, cloudblock := range config.ModulesList {
 		if cloudblock.Name == name {
-			config.ModulesList.Cloudblocks = append(config.ModulesList.Cloudblocks[:i], config.ModulesList.Cloudblocks[i+1:]...)
+			config.ModulesList = append(config.ModulesList[:i], config.ModulesList[i+1:]...)
 			found = true
 			break
 		}
@@ -340,7 +337,7 @@ func (cm *ConfigManagerImpl) GetCloudblockByName(name string) (CloudblockConfig,
 		return CloudblockConfig{}, err
 	}
 
-	for _, cloudblock := range config.ModulesList.Cloudblocks {
+	for _, cloudblock := range config.ModulesList {
 		if cloudblock.Name == name {
 			return cloudblock, nil
 		}
@@ -349,10 +346,10 @@ func (cm *ConfigManagerImpl) GetCloudblockByName(name string) (CloudblockConfig,
 	return CloudblockConfig{}, fmt.Errorf("cloudblock with name '%s' not found", name)
 }
 
-func (cm *ConfigManagerImpl) LoadModulesList() (ModulesList, error) {
+func (cm *ConfigManagerImpl) LoadModulesList() ([]CloudblockConfig, error) {
 	config, err := cm.LoadConfig()
 	if err != nil {
-		return ModulesList{}, err
+		return nil, err
 	}
 
 	return config.ModulesList, nil

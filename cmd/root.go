@@ -203,7 +203,7 @@ var addCmd = &cobra.Command{
 		}
 
 		// Append the new cloudblock to the list
-		cfg.ModulesList.Cloudblocks = append(cfg.ModulesList.Cloudblocks, cloudblock)
+		cfg.ModulesList = append(cfg.ModulesList, cloudblock)
 
 		// Save the updated config
 		err = configManager.SaveConfig(cfg)
@@ -236,9 +236,9 @@ var updateCmd = &cobra.Command{
 
 		// Find the cloudblock with the specified name and update its version
 		updated := false
-		for i, cloudblock := range cfg.ModulesList.Cloudblocks {
+		for i, cloudblock := range cfg.ModulesList {
 			if cloudblock.Name == name {
-				cfg.ModulesList.Cloudblocks[i].Version = version
+				cfg.ModulesList[i].Version = version
 				updated = true
 				break
 			}
