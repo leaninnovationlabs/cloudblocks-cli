@@ -1,6 +1,5 @@
 module "ec2-linux" {
-    $SOURCE
-    
+    source = $MODULES_SOURCE
     subnet_id = $SUBNET_ID
     instance_type = $INSTANCE_TYPE
     ami = $AMI

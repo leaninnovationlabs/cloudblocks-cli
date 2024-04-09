@@ -131,8 +131,8 @@ func ProcessConfig(configManager config.ConfigManager, wl *workload.Workload) er
 	// Add the source block inside the module code
 	moduleDir := configManager.GetModulesDir()
 	cloudblockName := wl.GetModuleName()
-	sourceBlock := fmt.Sprintf(`source = "%s/%s"`, moduleDir, cloudblockName)
-	updatedMainTf = bytes.ReplaceAll(updatedMainTf, []byte("$SOURCE"), []byte(sourceBlock))
+	sourceBlock := fmt.Sprintf(`"%s/%s"`, moduleDir, cloudblockName)
+	updatedMainTf = bytes.ReplaceAll(updatedMainTf, []byte("$MODULES_SOURCE"), []byte(sourceBlock))
 
 	updatedMainTf = AddBackendBlock(configManager, wl, updatedMainTf)
 
