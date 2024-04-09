@@ -1,0 +1,4 @@
+create-bucket:
+	aws s3 mb s3://$BUCKET_NAME
+	aws s3 put-bucket-tagging --bucket $BUCKET_NAME --tagging 'TagSet=[{Key=Name,Value=MyBucket}]'
+

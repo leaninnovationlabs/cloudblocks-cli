@@ -1,0 +1,14 @@
+{
+    "name": "demo_s3_create",
+    "uuid": "2222222-3b7b-4df8-969f-4b0c73d87b0d",
+    "run_id": "abc12345",
+    "cloudblock": {
+        "name": "s3_cli",
+        "version": "1.0.0"
+    },
+    "description": "This is a test workload",
+    "env": "dev",
+    "config": {
+        "bucket_name": "leaninnovation421432"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "name": "s3_cli",
+    "runtime": "cmd",
+    "params": [
+      {
+        "name": "bucket_name",
+        "description": "name of the s3 bucket",
+        "params": ["name"]
+    }]
+}
