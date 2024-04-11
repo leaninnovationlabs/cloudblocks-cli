@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 
 	"cloudblockscli.com/internal/config"
 	"cloudblockscli.com/internal/executors"
@@ -35,9 +36,7 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 
 	var wl workload.Workload
 	var err error
-	// var jsonData []byte
 
-	// Check if the --file flag is provided
 	// Check if the --file flag is provided
 	filePath, _ := cmd.Flags().GetString("file")
 	if filePath != "" {
@@ -86,19 +85,46 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 	}
 
 	// process config
+	fmt.Println("Getting module config for:", wl)
+
 	err = processing.ProcessConfig(configManager, &wl)
 	if err != nil {
 		fmt.Println("Error processing config:", err)
 		os.Exit(1)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Second)
-	defer cancel()
-	// Execute the workload
-	input := executors.ExecutorInput{WorkloadName: wl.Name, UUID: wl.UUID, RunID: wl.GetRunId()}
-	fmt.Println(input)
+	// Get the module runtime
+	fmt.Println("Getting module config for:", wl.GetModuleName())
+	moduleConfig, err := configManager.GetModuleConfig(wl.GetModuleName())
+	if err != nil {
+		fmt.Println("Error getting module config:", err)
+		os.Exit(1)
+	}
 
-	res, err := executors.Execute(ctx, input, configManager.GetWorkDir())
+	// Create the executor input
+	input := executors.ExecutorInput{WorkloadName: wl.Name, UUID: wl.UUID, RunID: wl.GetRunId()}
+
+	// Execute the workload based on the module runtime
+	var res executors.ExecutorOutput
+	switch moduleConfig.Runtime {
+	case "terraform":
+		ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Second)
+		defer cancel()
+		res, err = executors.Execute(ctx, input, configManager.GetWorkDir())
+	case "cmd":
+		workloadDir := filepath.Join(configManager.GetWorkDir(), wl.UUID, wl.GetRunId())
+		target := wl.GetTarget()
+		err = executors.ExecuteMakefile(workloadDir, target)
+		if err != nil {
+			res = executors.ExecutorOutput{Success: false, Error: err}
+		} else {
+			res = executors.ExecutorOutput{Success: true}
+		}
+	default:
+		fmt.Printf("Unsupported runtime: %s\n", moduleConfig.Runtime)
+		os.Exit(1)
+	}
+
 	if err != nil {
 		fmt.Println("Error executing workload:", err)
 		fmt.Printf("Success: %t\nError: %s\n", res.Success, res.Error)

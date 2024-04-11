@@ -69,6 +69,22 @@ func CopyMainFile(workloadDir string, runID string, newRunID string) error {
 	return nil
 }
 
+func createDeleteLogFile(workloadDir string, uuid string) (*os.File, error) {
+	logsDir := filepath.Join(workloadDir, "deleteLogs")
+	err := os.MkdirAll(logsDir, os.ModePerm)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create logs directory: %v", err)
+	}
+
+	logFile := filepath.Join(logsDir, uuid+".log")
+	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open log file: %v", err)
+	}
+
+	return file, nil
+}
+
 func createLogFile(workloadDir string, uuid string) (*os.File, error) {
 	logsDir := filepath.Join(workloadDir, "logs")
 	err := os.MkdirAll(logsDir, os.ModePerm)
@@ -86,7 +102,7 @@ func createLogFile(workloadDir string, uuid string) (*os.File, error) {
 }
 
 func RunTfDestroy(ctx context.Context, workloadDir string, input ExecutorInput) ExecutorOutput {
-	logFile, err := createLogFile(workloadDir, input.RunID)
+	logFile, err := createDeleteLogFile(workloadDir, input.RunID)
 	if err != nil {
 		return ExecutorOutput{Success: false, Error: err}
 	}
