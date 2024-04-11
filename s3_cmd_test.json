@@ -7,6 +7,7 @@
         "version": "1.0.0"
     },
     "description": "This is a test workload",
+    "target": "tag-bucket",
     "env": "dev",
     "config": {
         "bucket_name": "leaninnovation421432"
