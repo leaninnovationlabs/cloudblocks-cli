@@ -269,7 +269,6 @@ func DryRunCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 	// var jsonData []byte
 
 	// Check if the --file flag is provided
-	// Check if the --file flag is provided
 	filePath, _ := cmd.Flags().GetString("file")
 	if filePath != "" {
 		// Read the JSON from the file
