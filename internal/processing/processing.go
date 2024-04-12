@@ -14,7 +14,7 @@ import (
 	"cloudblockscli.com/internal/workload"
 )
 
-const templateFileName = "/module_template"
+const templateFileName = "/module_template.tpl"
 
 var configManger = config.NewConfigManager("config.json")
 
