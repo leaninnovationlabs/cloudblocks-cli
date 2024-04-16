@@ -138,6 +138,8 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 		os.Exit(1)
 	}
 
+	wl.UpdateStatus(configManager, "executed")
+
 	// Send the result to the channel
 	resultCh <- res
 }
@@ -216,6 +218,8 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 	// 	fmt.Println("Error deleting workload:", err)
 	// 	os.Exit(1)
 	// }
+
+	wl.UpdateStatus(configManager, "deleted")
 
 	// delete workload directory
 	// Send the result to the channel
