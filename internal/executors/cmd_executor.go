@@ -48,7 +48,8 @@ func ExecuteMakefile(workloadDir string, target string) error {
 
 	if target == "" {
 		// If no target is specified, execute the default target
-		return executeDefaultTarget(makefilePath)
+		return fmt.Errorf("Please specify a target.")
+		//return executeDefaultTarget(makefilePath)
 	}
 
 	// Execute the specified target

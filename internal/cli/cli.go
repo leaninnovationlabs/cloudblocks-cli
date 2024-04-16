@@ -113,7 +113,7 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 		res, err = executors.Execute(ctx, input, configManager.GetWorkDir())
 	case "cmd":
 		workloadDir := filepath.Join(configManager.GetWorkDir(), wl.UUID, wl.GetRunId())
-		target := wl.GetTarget()
+		target := wl.GetAction()
 		err = executors.ExecuteMakefile(workloadDir, target)
 		if err != nil {
 			res = executors.ExecutorOutput{Success: false, Error: err}
@@ -137,6 +137,8 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 		fmt.Println("Error updating latest run ID:", err)
 		os.Exit(1)
 	}
+
+	wl.UpdateStatus(configManager, "executed")
 
 	// Send the result to the channel
 	resultCh <- res
@@ -216,6 +218,8 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 	// 	fmt.Println("Error deleting workload:", err)
 	// 	os.Exit(1)
 	// }
+
+	wl.UpdateStatus(configManager, "deleted")
 
 	// delete workload directory
 	// Send the result to the channel

@@ -14,6 +14,7 @@ type ListElement struct {
 	Name        string `json:"name"`
 	UUID        string `json:"uuid"`
 	LatestRunID string `json:"latest_run_id"`
+	Status      string `json:"status"`
 }
 
 type WorkloadList struct {
@@ -25,7 +26,7 @@ type Workload struct {
 	UUID        string                 `json:"uuid"`
 	RunID       string                 `json:"run_id"`
 	Cloudblock  Cloudblock             `json:"cloudblock"`
-	Taget       string                 `json:"target"`
+	Action      string                 `json:"action"`
 	Description string                 `json:"description"`
 	Env         string                 `json:"env"`
 	Config      map[string]interface{} `json:"config"`
@@ -52,8 +53,8 @@ func (m *Workload) GetModuleName() string {
 	return m.Cloudblock.Name
 }
 
-func (m *Workload) GetTarget() string {
-	return m.Taget
+func (m *Workload) GetAction() string {
+	return m.Action
 }
 
 func (m *Workload) GetRunId() string {
@@ -155,6 +156,33 @@ func UpdateLatestRunID(configManager config.ConfigManager, uuid string, runID st
 
 	if !found {
 		return fmt.Errorf("workload with UUID %s not found", uuid)
+	}
+
+	err = WriteWorkloads(configManager, list)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Workload) UpdateStatus(configManager config.ConfigManager, status string) error {
+	list, err := ListWorkloads(configManager)
+	if err != nil {
+		return err
+	}
+
+	found := false
+	for i, v := range list.List {
+		if v.UUID == m.UUID {
+			list.List[i].Status = status
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("workload with UUID %s not found", m.UUID)
 	}
 
 	err = WriteWorkloads(configManager, list)
