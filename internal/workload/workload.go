@@ -25,7 +25,7 @@ type Workload struct {
 	UUID        string                 `json:"uuid"`
 	RunID       string                 `json:"run_id"`
 	Cloudblock  Cloudblock             `json:"cloudblock"`
-	Taget       string                 `json:"target"`
+	Action      string                 `json:"action"`
 	Description string                 `json:"description"`
 	Env         string                 `json:"env"`
 	Config      map[string]interface{} `json:"config"`
@@ -52,8 +52,8 @@ func (m *Workload) GetModuleName() string {
 	return m.Cloudblock.Name
 }
 
-func (m *Workload) GetTarget() string {
-	return m.Taget
+func (m *Workload) GetAction() string {
+	return m.Action
 }
 
 func (m *Workload) GetRunId() string {

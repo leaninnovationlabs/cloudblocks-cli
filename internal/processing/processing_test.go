@@ -22,6 +22,7 @@ func TestProcess(t *testing.T) {
 		Name:        "test",
 		Description: "A test workload",
 		RunID:       "abc123",
+		Action:      "create",
 		Cloudblock: workload.Cloudblock{
 			Name:    "ec2",
 			Version: "1.0.0",
@@ -57,7 +58,6 @@ func TestProcess(t *testing.T) {
 		t.Errorf("main.tf does not exist in the run directory")
 	}
 }
-
 
 // tests to see if bool and int strings are transformed to bool and int
 func TestTransformStringVars(t *testing.T) {
