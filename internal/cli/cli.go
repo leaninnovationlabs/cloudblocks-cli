@@ -48,10 +48,10 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 		}
 		err = json.Unmarshal(jsonData, &wl)
 		if wl.GetRunId() == "" {
-			wl.RunID = utils.GenerateUUID()
+			wl.RunID = wl.Name + "_" +  utils.GenerateRandNum()
 		}
 		if wl.GetUUID() == "" {
-			wl.UUID = utils.GenerateUUID()
+			wl.UUID = wl.Name + "_" +  utils.GenerateRandNum()
 		}
 		if err != nil {
 			fmt.Println("Error parsing workload JSON:", err)
@@ -166,11 +166,13 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 			os.Exit(1)
 		}
 		err = json.Unmarshal(jsonData, &wl)
-		if wl.GetRunId() == "" {
-			wl.RunID = utils.GenerateUUID()
-		}
-		if wl.GetUUID() == "" {
-			wl.UUID = utils.GenerateUUID()
+		if wl.UUID == "" {
+			if workload.GetWorkloadUUIDByName(configManager, wl.Name) != "" {
+				wl.UUID = workload.GetWorkloadUUIDByName(configManager, wl.Name)
+			} else {
+				fmt.Println("No workload with this name exists!")
+				os.Exit(1)
+			}
 		}
 		if err != nil {
 			fmt.Println("Error parsing workload JSON:", err)
@@ -179,11 +181,13 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 	} else if len(args) == 1 {
 		// Parse the JSON workload from the command line argument
 		err = json.Unmarshal([]byte(args[0]), &wl)
-		if wl.GetRunId() == "" {
-			wl.RunID = utils.GenerateUUID()
-		}
-		if wl.GetUUID() == "" {
-			wl.UUID = utils.GenerateUUID()
+		if wl.UUID == "" {
+			if workload.GetWorkloadUUIDByName(configManager, wl.Name) != "" {
+				wl.UUID = workload.GetWorkloadUUIDByName(configManager, wl.Name)
+			} else {
+				fmt.Println("No workload with this name exists!")
+				os.Exit(1)
+			}
 		}
 		if err != nil {
 			fmt.Println("Error parsing workload JSON:", err)

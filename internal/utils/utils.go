@@ -1,11 +1,13 @@
 package utils
 
 import (
-	"cloudblockscli.com/internal/config"
-	"crypto/rand"
-	"fmt"
-	// "github.com/joho/godotenv"
-	"os"
+    "cloudblockscli.com/internal/config"
+    cryptoRand "crypto/rand"
+    mathRand "math/rand"
+    "strconv"
+    "time"
+    "fmt"
+    "os"
 )
 
 // func LoadEnv(configManager config.ConfigManager) error {
@@ -17,13 +19,30 @@ import (
 // }
 
 func GenerateUUID() string {
-	b := make([]byte, 16)
-	_, err := rand.Read(b)
-	if err != nil {
-		return ""
-	}
-	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
-	return uuid
+    b := make([]byte, 16)
+    _, err := cryptoRand.Read(b)
+    if err != nil {
+        return ""
+    }
+    uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+    return uuid
+}
+
+func GenerateRandNum() string {
+    mathRand.Seed(time.Now().UnixNano())
+
+    // Generate a random number between 0 and 999
+    randomNum := mathRand.Intn(1000)
+
+    // Convert the random number to a string
+    randomNumStr := strconv.Itoa(randomNum)
+
+    // Pad the string with leading zeros if necessary
+    for len(randomNumStr) < 3 {
+        randomNumStr = "0" + randomNumStr
+    }
+
+    return randomNumStr
 }
 
 func CheckModulesDirectory(configManager config.ConfigManager) bool {
@@ -52,7 +71,6 @@ func DeleteWorkDir(configManager config.ConfigManager, name string) error {
 	}
 	return nil
 }
-
 func CreateWorkDir(configManager config.ConfigManager, name string) error {
 	if CheckWorkDir(configManager, name) {
 		return fmt.Errorf("directory already exists")
