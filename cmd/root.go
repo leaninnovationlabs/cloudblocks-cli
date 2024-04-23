@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"path/filepath"
 	"sync"
 	// "time"
 )
@@ -36,8 +37,15 @@ var initCmd = &cobra.Command{
 		modulesDir, _ := cmd.Flags().GetString("modulesdir")
 
 		// create config manager
-		configManager := config.NewConfigManager("config.json")
-		err := configManager.InitializeConfig()
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println("Error getting user home directory:", err)
+			os.Exit(1)
+		}
+		installDir := filepath.Join(homeDir, ".cloudblocks")
+		configFile := filepath.Join(installDir, "config.json")
+		configManager := config.NewConfigManager(configFile)
+		err = configManager.InitializeConfig()
 		if err != nil {
 			fmt.Println("Error initializing config:", err)
 			os.Exit(1)
@@ -49,12 +57,11 @@ var initCmd = &cobra.Command{
 			fmt.Println("Error loading config:", err)
 			os.Exit(1)
 		}
-		cwd, _ := os.Getwd()
 		if workDir == "" {
-			workDir = cwd + "/" + "work"
+			workDir = filepath.Join(installDir, "work")
 		}
 		if modulesDir == "" {
-			modulesDir = cwd + "/" + "modules"
+			modulesDir = filepath.Join(installDir, "modules")
 		}
 		cfg.Workloaddirectory = workDir
 		cfg.Modulesdirectory = modulesDir
@@ -77,6 +84,7 @@ var initCmd = &cobra.Command{
 		}
 
 		fmt.Printf("Cloudblocks environment initialized successfully.\n")
+		fmt.Printf("Config file: %s\n", configFile)
 		fmt.Printf("Work directory: %s\nModules directory: %s\n", workDir, modulesDir)
 	},
 }

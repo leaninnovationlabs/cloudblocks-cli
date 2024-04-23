@@ -263,15 +263,16 @@ func (cm *ConfigManagerImpl) InitializeConfig() error {
 	}
 
 	if !config.Initialized {
-		cwd, err := os.Getwd()
+		execPath, err := os.Executable()
 		if err != nil {
 			return err
 		}
+		installDir := filepath.Dir(execPath)
 
 		config.Initialized = true
-		config.RootPath = cwd
-		config.Workloaddirectory = filepath.Join(cwd, "./work")
-		config.Modulesdirectory = filepath.Join(cwd, "./modules")
+		config.RootPath = installDir
+		config.Workloaddirectory = filepath.Join(installDir, "./work")
+		config.Modulesdirectory = filepath.Join(installDir, "./modules")
 		config.Env = map[string]EnvConfig{
 			"dev": {
 				Bucket: "",
