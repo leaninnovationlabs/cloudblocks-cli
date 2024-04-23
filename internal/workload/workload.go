@@ -166,6 +166,21 @@ func UpdateLatestRunID(configManager config.ConfigManager, uuid string, runID st
 	return nil
 }
 
+func GetWorkloadUUIDByName(configManager config.ConfigManager, name string) string {
+    list, err := ListWorkloads(configManager)
+    if err != nil {
+        return ""
+    }
+
+    for _, workload := range list.List {
+        if workload.Name == name {
+            return workload.UUID
+        }
+    }
+
+    return ""
+}
+
 func (m *Workload) UpdateStatus(configManager config.ConfigManager, status string) error {
 	list, err := ListWorkloads(configManager)
 	if err != nil {
@@ -281,23 +296,33 @@ func ListWorkloads(configManager config.ConfigManager) (WorkloadList, error) {
 }
 
 func AddWorkload(configManager config.ConfigManager, wl *Workload) error {
-	list, err := ListWorkloads(configManager)
-	if err != nil {
-		return err
-	}
+    list, err := ListWorkloads(configManager)
+    if err != nil {
+        return err
+    }
 
-	if CheckDuplicates(list.List, wl.UUID) {
-		return fmt.Errorf("workload already exists")
-	}
+    // Check if a workload with the same name already exists
+    for _, existingWorkload := range list.List {
+        if existingWorkload.Name == wl.Name {
+            // Use the existing UUID
+            wl.UUID = existingWorkload.UUID
+            return nil
+        }
+    }
 
-	newElement := ListElement{Name: wl.Name, UUID: wl.UUID, LatestRunID: wl.RunID}
-	list.List = append(list.List, newElement)
-	err = WriteWorkloads(configManager, list)
-	if err != nil {
-		return err
-	}
+    // If the workload doesn't exist, generate a new UUID
+    if wl.GetUUID() == "" {
+        wl.UUID = utils.GenerateUUID()
+    }
 
-	return nil
+    newElement := ListElement{Name: wl.Name, UUID: wl.UUID, LatestRunID: wl.RunID}
+    list.List = append(list.List, newElement)
+    err = WriteWorkloads(configManager, list)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
 
 func DeleteWorkload(configManager config.ConfigManager, uuid string) error {
@@ -323,6 +348,15 @@ func DeleteWorkload(configManager config.ConfigManager, uuid string) error {
 	}
 
 	return nil
+}
+
+func CheckDuplicateName(list []ListElement, name string) bool {
+	for _, v := range list {
+		if v.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 func CheckDuplicates(list []ListElement, value string) bool {
