@@ -155,6 +155,17 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 
 	var wl workload.Workload
 	var err error
+	
+	Name, _ := cmd.Flags().GetString("name")
+	if Name != "" {
+		if workload.GetWorkloadUUIDByName(configManager, Name) != "" {
+			wl.Name = Name
+			wl.UUID = workload.GetWorkloadUUIDByName(configManager, Name)
+		} else {
+			fmt.Println("No workload with this name exists")
+			os.Exit(1)
+		}
+	}
 
 	// Check if the --file flag is provided
 	filePath, _ := cmd.Flags().GetString("file")
@@ -193,10 +204,7 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 			fmt.Println("Error parsing workload JSON:", err)
 			os.Exit(1)
 		}
-	} else {
-		fmt.Println("Please provide a JSON workload either as an argument or using the --file flag.")
-		os.Exit(1)
-	}
+	} 
 
 	if !utils.CheckWorkDir(configManager, wl.UUID) {
 		fmt.Printf("%s\n", configManager.GetWorkDir()+"/"+wl.UUID)

@@ -475,6 +475,7 @@ func init() {
 	envCmd.AddCommand(envListCmd)
 	executeCmd.Flags().String("file", "", "Path to the JSON workload file")
 	deleteCmd.Flags().String("file", "", "Path to the JSON workload file")
+	deleteCmd.Flags().String("name", "", "Name of the workload")
 	initCmd.Flags().String("workdir", "", "Path to the work directory")
 	initCmd.Flags().String("modulesdir", "", "Path to the modules directory")
 
