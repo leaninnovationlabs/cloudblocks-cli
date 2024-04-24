@@ -110,8 +110,12 @@ func RunTfDestroy(ctx context.Context, workloadDir string, input ExecutorInput) 
 
 	destroyCmd := exec.CommandContext(ctx, "terraform", "destroy", "-auto-approve")
 	destroyCmd.Dir = filepath.Join(workloadDir, input.RunID)
-	destroyCmd.Stdout = logFile
-	destroyCmd.Stderr = logFile
+
+
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	destroyCmd.Stdout = multiWriter 
+	destroyCmd.Stderr = multiWriter
 	err = destroyCmd.Run()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
@@ -134,8 +138,11 @@ func RunTfInit(ctx context.Context, workloadDir string, input ExecutorInput) Exe
 
 	initCmd := exec.CommandContext(ctx, "terraform", "init")
 	initCmd.Dir = filepath.Join(workloadDir, input.RunID)
-	initCmd.Stdout = logFile
-	initCmd.Stderr = logFile
+	
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	initCmd.Stdout = multiWriter
+	initCmd.Stderr = multiWriter
 	err = initCmd.Run()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
@@ -158,8 +165,11 @@ func RunTfPlan(ctx context.Context, workloadDir string, input ExecutorInput) Exe
 
 	applyCmd := exec.CommandContext(ctx, "terraform", "plan")
 	applyCmd.Dir = filepath.Join(workloadDir, input.RunID)
-	applyCmd.Stdout = logFile
-	applyCmd.Stderr = logFile
+	
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	applyCmd.Stdout = multiWriter
+	applyCmd.Stderr = multiWriter 
 	err = applyCmd.Run()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
@@ -182,8 +192,11 @@ func RunTfApply(ctx context.Context, workloadDir string, input ExecutorInput) Ex
 
 	applyCmd := exec.CommandContext(ctx, "terraform", "apply", "-auto-approve")
 	applyCmd.Dir = filepath.Join(workloadDir, input.RunID)
-	applyCmd.Stdout = logFile
-	applyCmd.Stderr = logFile
+	
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	applyCmd.Stdout = multiWriter
+	applyCmd.Stderr = multiWriter
 	err = applyCmd.Run()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
