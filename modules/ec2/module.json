@@ -1,0 +1,45 @@
+{
+    "name": "ec2",
+    "runtime": "terraform",
+    "params": [
+        {
+            "name": "ami",
+            "type": "string",
+            "description": "The AMI to use for the EC2 instance"
+        },
+        {
+            "name": "instance_type",
+            "type": "string",
+            "description": "The type of instance to launch"
+        },
+        {
+            "name": "subnet_id",
+            "type": "string",
+            "description": "The subnet to launch the instance into"
+        },
+        {
+            "name": "user_data",
+            "type": "string",
+            "description": "The path and filename of the user data bash script"
+        },
+        {
+            "name": "tags",
+            "type": "map(string)",
+            "description": "The tags to apply to the EC2 instance"
+        },
+        {
+            "name": "associate_public_ip_address",
+            "type": "bool",
+            "description": "Whether to associate a public IP address with the instance"
+        }
+    ],
+    "actions": [{
+        "name": "create",
+        "description": "Create an EC2 instance",
+        "params": ["*"]
+    },{
+        "name": "update",
+        "description": "Update an EC2 instance",
+        "params": ["instance_type", "tags", "associate_public_ip_address"]
+    }]
+}

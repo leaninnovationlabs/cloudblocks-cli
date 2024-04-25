@@ -1,0 +1,20 @@
+{
+    "name": "tahir_ec2_demo",
+    "version": "1.0.0",
+    "uuid": "tahir_ec2_demo_1",
+    "cloudblock": {
+        "name": "ec2",
+        "version": "1.0.0"
+    },
+    "description": "Creates a CACI security compliant EC2 instance",
+    "env": "prod",
+    "action": "create",
+    "config":{
+        "subnet_id": "subnet-0048d8a65b4885d8e",
+        "instance_type": "t3.medium",
+        "ami": "ami-067bb788f6f1f4484",
+        "tags": {"Name": "caci-demo", "env": "dev"},
+        "associate_public_ip_address": "false",
+        "user_data": "/home/ec2-user/cloudblocks-cli/workloads/ec2/script.ps1"
+    }
+}

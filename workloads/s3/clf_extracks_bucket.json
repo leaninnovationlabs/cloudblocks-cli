@@ -1,0 +1,15 @@
+{
+    "name": "demo_s3_create",
+    "uuid": "demo_s3_create_1",
+    "run_id": "abc12345",
+    "cloudblock": {
+        "name": "s3_cli",
+        "version": "1.0.0"
+    },
+    "description": "This is a test workload",
+    "action": "delete",
+    "env": "dev",
+    "config": {
+        "bucket_name": "clfpoeextracts123"
+    }
+}
