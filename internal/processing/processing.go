@@ -68,7 +68,17 @@ func ReplaceVariables(mainTf []byte, variables map[string]interface{}) []byte {
 		case []interface{}:
 			listValue := make([]string, len(value))
 			for i, item := range value {
-				listValue[i] = fmt.Sprintf("\"%v\"", item)
+				switch itemValue := item.(type) {
+				case string:
+					listValue[i] = fmt.Sprintf("\"%v\"", itemValue)
+				case map[string]interface{}:
+					jsonBytes, err := json.Marshal(itemValue)
+					if err == nil {
+						listValue[i] = string(jsonBytes)
+					}
+				default:
+					listValue[i] = fmt.Sprintf("%v", itemValue)
+				}
 			}
 			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("[%s]", strings.Join(listValue, ", "))))
 		case map[string]interface{}:
@@ -79,11 +89,10 @@ func ReplaceVariables(mainTf []byte, variables map[string]interface{}) []byte {
 				}
 				mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("{\n%s\n}", strings.Join(tagPairs, ",\n"))))
 			} else {
-				mapValue := make([]string, 0, len(value))
-				for mapKey, mapVal := range value {
-					mapValue = append(mapValue, fmt.Sprintf("%s = {\nmost_recent = %v\n}", mapKey, mapVal))
+				jsonBytes, err := json.Marshal(value)
+				if err == nil {
+					mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), jsonBytes)
 				}
-				mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strings.Join(mapValue, "\n")))
 			}
 		default:
 			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("%v", v)))
