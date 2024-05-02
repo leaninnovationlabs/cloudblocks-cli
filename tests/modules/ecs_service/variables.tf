@@ -1,6 +1,7 @@
 variable "aws_region" {
   type        = string
   description = "AWS region"
+  default     = "us-gov-west-1"
 }
 
 variable "default_vpc_id" {
@@ -82,9 +83,44 @@ variable "env_variables" {
   description = "Environment Variables"
 }
 
+variable "log_router_name" {
+  type        = string
+  description = "Task Definition Log Container Router Name"
+  default     = null
+}
+
+variable "fluent_bit_image" {
+  type        = string
+  description = "Log fluent bit image"
+  default     = null
+}
+
 variable "log_stream_prefix" {
   type        = string
   description = "Log Stream prefix"
+}
+
+variable "mount_points" {
+  type        = map(string)
+  description = "Container Mount Points for volume"
+  default     = null
+}
+
+variable "log_delivery_stream" {
+  type        = string
+  description = "Kinesis Delivery stream for log"
+  default     = null
+}
+
+variable "volume_name" {
+  type        = string
+  description = "Log Stream prefix"
+  default     = null
+}
+
+variable "efs_vol_config" {
+  type    = map(any)
+  default = null
 }
 
 variable "task_def_tags" {
@@ -181,6 +217,7 @@ variable "ecs_sg_egress_rules" {
 variable "assign_public_ip" {
   type        = bool
   description = "Assign public id for ECS service"
+  default     = false
 }
 
 variable "cluster_id" {
@@ -208,4 +245,10 @@ variable "container_port" {
 variable "ecs_tags" {
   type    = map(any)
   default = {}
+}
+
+variable "efs_security_group" {
+  type        = string
+  description = "EFS security group id"
+  default     = null
 }

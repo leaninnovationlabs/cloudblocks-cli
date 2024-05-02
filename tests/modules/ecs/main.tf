@@ -24,6 +24,16 @@ module "ecs_service_sg" {
   sg_tags          = { Name = "${var.ecs_sg_name}" }
 }
 
+resource "aws_security_group_rule" "efs_ingress_rule" {
+  count                    = var.efs_security_group == null ? 0 : 1
+  type                     = "ingress"
+  from_port                = 2049
+  to_port                  = 2049
+  protocol                 = "tcp"
+  source_security_group_id = module.ecs_service_sg.security_group_id
+  security_group_id        = var.efs_security_group
+}
+
 resource "aws_ecs_service" "alb_ecs_service" {
   name                               = var.ecs_service_name
   cluster                            = var.cluster_id

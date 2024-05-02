@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-gov-east-1"
+  region = var.aws_region
 }
 
 data "aws_caller_identity" "current" {}
@@ -42,6 +42,12 @@ module "cont_task_definitions" {
   cont_health_check_config = var.cont_health_check_config
   app_port_mappings        = var.app_port_mappings
   env_variables            = var.env_variables
+  log_router_name          = var.log_router_name
+  fluent_bit_image         = var.fluent_bit_image
+  log_delivery_stream      = var.log_delivery_stream
+  mount_points             = var.mount_points
+  volume_name              = var.volume_name
+  efs_vol_config           = var.efs_vol_config
   log_group                = module.cont_log_group.log_group_name
   log_stream_prefix        = var.log_stream_prefix
   task_def_tags            = var.task_def_tags
@@ -96,13 +102,14 @@ module "cont_ecs_service" {
   ecs_sg_ingress_rules = var.ecs_sg_ingress_rules
   ecs_sg_egress_rules  = var.ecs_sg_egress_rules
   cluster_id           = var.cluster_id
-  task_defn_arn        = module.cont_task_definitions.task_definition_arn
+  task_defn_arn        = module.cont_task_definitions.task_definition_arn == null ? module.cont_task_definitions.task_definition_with_fluentbit_arn : module.cont_task_definitions.task_definition_arn
   desired_count        = var.desired_count
   alb_security_group   = var.alb_security_group
   ecs_subnet_ids       = var.subnet_ids
   target_group_arn     = module.cont_target_group.cont_target_group_arn
   container_name       = module.cont_task_definitions.td_web_container_name
   container_port       = var.container_port
+  efs_security_group   = var.efs_security_group
   depends_on           = [module.cont_listener_rule.alb-listener-rule]
 }
 

@@ -1,0 +1,62 @@
+{
+  "name": "demo_ec2_create",
+  "uuid": "9188c324-3b2b-4df8-969f-4b0c72d87b0d",
+  "run_id": "abc12345",
+  "cloudblock": {
+    "name": "ecs_service",
+    "version": "1.0.0"
+  },
+  "description": "This is a test workload",
+  "env": "dev",
+  "config": {
+    "aws_region": "us-gov-west-1",
+    "default_vpc_id": "vpc-17a24c73",
+    "subnet_ids": ["subnet-0015edbb16d561368", "subnet-0b57af6184c48fe24"],
+    "task_def_family": "DevCurrentIdamUmapp-TEST-TASKDEFINITION",
+    "task_role_arn": "arn:aws-us-gov:iam::673550068417:role/D-ECSTaskExecutionRole",
+    "task_exec_role_arn": "arn:aws-us-gov:iam::673550068417:role/D-ECSTaskExecutionRole",
+    "task_def_cpu": "2048",
+    "task_def_memory": "4096",
+    "app_container_name": "DCURRENT-IDAM-UMAPP-WEB",
+    "app_container_image": "673550068417.dkr.ecr.us-gov-west-1.amazonaws.com/idam-umapp:dev",
+    "app_port_mappings": [{ "containerPort": 8443, "hostPort": 8443 }],
+    "env_variables": [{ "name": "AWS_REGION", "value": "us-gov-east-1" }],
+    "log_group_name": "DIDAM-UMAPP-LOG-GROUP",
+    "port1": 8443,
+    "port2": 8080,
+    "log_stream_prefix": "ecs",
+    "log_delivery_stream": "dlesdeliverystream",
+    "log_router_name": "DIDAM-UMAPP-ROUTER",
+    "fluent_bit_image": "673550068417.dkr.ecr.us-gov-west-1.amazonaws.com/ironbank/opensource/fluent/fluent-bit:latest",
+    "task_def_tags": {},
+    "target_group_name": "DCURRENT-TG-IDAM-UMAPP",
+    "tg_health_check_path": "/puma/healthcheck",
+    "target_group_protocol": "HTTPS",
+    "target_group_port": 8443,
+    "tg_health_check_protocol": "HTTPS",
+    "tg_health_check_port": "traffic-port",
+    "listener_arn": "arn:aws-us-gov:elasticloadbalancing:us-gov-west-1:673550068417:listener/app/DALB-LES/02afc88866f30612/7fabc9cd3094327e",
+    "listener_conditions": "[{\"path_pattern\":[\"/propertiesui/*\"], \"host_header\": [\"dev-current-cont-int.seatestgov.com\"]}]",
+    "ecs_service_name": "DCURRENT-IDAM-UMAPP-SERVICE",
+    "ecs_sg_name": "DSG-IDAM-UMAPP-WEB",
+    "assign_public_ip": false,
+    "cluster_id": "arn:aws-us-gov:ecs:us-gov-west-1:673550068417:cluster/DLES-CLUSTER",
+    "ecs_sg_ingress_rules": "[{\"from_port\":8443,\"to_port\":8443,\"protocol\":\"tcp\",\"security_groups\":[\"sg-0feb8b5c123303ff8\"],\"description\":\"Allow inbound from 8443\"},{\"from_port\":8080,\"to_port\":8080,\"protocol\":\"tcp\",\"security_groups\":[\"sg-0feb8b5c123303ff8\"],\"description\":\"Allow inbound from 8080\"}]",
+    "ecs_sg_egress_rules": "[{\"from_port\":1,\"to_port\":65535,\"protocol\":\"tcp\",\"cidr_blocks\":[\"0.0.0.0/0\"],\"description\":\"Outbound Rules for the tcp range 1,65535\"}]",
+    "desired_count": 1,
+    "alb_security_group": "sg-0feb8b5c123303ff8",
+    "container_port": 8443,
+    "ecs_tags": {},
+    "mount_points": {
+      "sourceVolume": "idam-properties",
+      "containerPath": "/usr/local/tomcat/common"
+    },
+    "volume_name": "idam-properties",
+    "efs_vol_config": {
+      "file_system_id": "fs-080d30121ed07a9ee",
+      "root_directory": "/idam",
+      "transit_encryption": "ENABLED"
+    },
+    "efs_security_group": "sg-70af5e17"
+  }
+}

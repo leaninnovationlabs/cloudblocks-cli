@@ -1,0 +1,42 @@
+{
+  "name": "alb",
+  "runtime": "terraform",
+  "params": [
+    {
+      "name": "default_vpc_id",
+      "type": "string",
+      "description": "Default vpc id"
+    },
+    {
+      "name": "subnet_ids",
+      "type": "list(string)",
+      "description": "The subnet to launch the ECS into"
+    },
+    {
+      "name": "alb_name",
+      "type": "string",
+      "description": "Application Load Balancer Name"
+    },
+    {
+      "name": "alb_sg_name",
+      "type": "string",
+      "description": "Security Group for Application Load Balancer"
+    },
+    {
+      "name": "ssl_policy",
+      "type": "string",
+      "description": "ALB Listener Rule's SSL Poilcy"
+    },
+    {
+      "name": "cert_arn",
+      "type": "string",
+      "description": "ALB Listener Rule's certificate ARN"
+    },
+    {
+      "name": "alb_tags",
+      "type": "map(any)",
+      "description": "ALB Tags",
+      "default": {}
+    }
+  ]
+}

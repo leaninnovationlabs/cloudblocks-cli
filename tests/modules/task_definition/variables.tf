@@ -54,6 +54,18 @@ variable "env_variables" {
   description = "Environment Variables"
 }
 
+variable "log_router_name" {
+  type        = string
+  description = "Task Definition Log Container Router Name"
+  default     = null
+}
+
+variable "fluent_bit_image" {
+  type        = string
+  description = "Log fluent bit image"
+  default     = null
+}
+
 variable "log_group" {
   type        = string
   description = "Log Group"
@@ -62,6 +74,29 @@ variable "log_group" {
 variable "log_stream_prefix" {
   type        = string
   description = "Log Stream prefix"
+}
+
+variable "log_delivery_stream" {
+  type        = string
+  description = "Delivery stream for log"
+  default     = null
+}
+
+variable "mount_points" {
+  type        = map(string)
+  description = "Container Mount Points for volume"
+  default     = null
+}
+
+variable "volume_name" {
+  type        = string
+  description = "Log Stream prefix"
+  default     = null
+}
+
+variable "efs_vol_config" {
+  type    = map(any)
+  default = null
 }
 
 variable "task_def_tags" {

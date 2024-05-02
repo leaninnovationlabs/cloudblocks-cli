@@ -1,0 +1,19 @@
+{
+  "name": "demo_alb_create",
+  "uuid": "9188c324-3b2b-4df8-969f-4b0c72d87b0d",
+  "run_id": "albrunids",
+  "cloudblock": {
+    "name": "alb",
+    "version": "1.0.0"
+  },
+  "description": "This is a test workload for the new s3 alb",
+  "env": "uat",
+  "config": {
+    "default_vpc_id": "vpc-0fdb5b592deca7e09",
+    "subnet_ids": ["subnet-0969b3eb6e7d73b5d", "subnet-03f31de5acd377f8e"],
+    "alb_name": "TRFM-ALB",
+    "alb_sg_name": "TRFM-SG",
+    "ssl_policy": "ELBSecurityPolicy-2016-08",
+    "cert_arn": "arn:aws-us-gov:iam::070514115644:server-certificate/MSClb2024"
+  }
+}
