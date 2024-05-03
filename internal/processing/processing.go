@@ -2,7 +2,7 @@ package processing
 
 import (
 	"bytes"
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -52,53 +52,93 @@ func TransformStringVars(key string, variable *string) {
 }
 
 func ReplaceVariables(mainTf []byte, variables map[string]interface{}) []byte {
-	for k, v := range variables {
-		placeholder := "$" + strings.ToUpper(k)
+    for k, v := range variables {
+        placeholder := "$" + strings.ToUpper(k)
 
-		switch value := v.(type) {
-		case string:
-			if k != "tags" {
-				value = fmt.Sprintf("\"%v\"", v)
-			}
-			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(value))
-		case bool:
-			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatBool(value)))
-		case float64:
-			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatFloat(value, 'f', -1, 64)))
-		case []interface{}:
-			listValue := make([]string, len(value))
-			for i, item := range value {
-				switch itemValue := item.(type) {
-				case string:
-					listValue[i] = fmt.Sprintf("\"%v\"", itemValue)
-				case map[string]interface{}:
-					jsonBytes, err := json.Marshal(itemValue)
-					if err == nil {
-						listValue[i] = string(jsonBytes)
-					}
-				default:
-					listValue[i] = fmt.Sprintf("%v", itemValue)
-				}
-			}
-			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("[%s]", strings.Join(listValue, ", "))))
-		case map[string]interface{}:
-			if k == "tags" {
-				tagPairs := make([]string, 0, len(value))
-				for tagKey, tagValue := range value {
-					tagPairs = append(tagPairs, fmt.Sprintf("%s = \"%v\"", tagKey, tagValue))
-				}
-				mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("{\n%s\n}", strings.Join(tagPairs, ",\n"))))
-			} else {
-				jsonBytes, err := json.Marshal(value)
-				if err == nil {
-					mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), jsonBytes)
-				}
-			}
-		default:
-			mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("%v", v)))
-		}
-	}
-	return mainTf
+        switch value := v.(type) {
+        case string:
+            if strings.HasPrefix(value, "{") && strings.HasSuffix(value, "}") {
+                // Assume value is a map of strings
+                mapValue := make(map[string]interface{})
+                err := json.Unmarshal([]byte(value), &mapValue)
+                if err == nil {
+                    formattedMap := formatHCLMap(mapValue)
+                    mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedMap))
+                } else {
+                    mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("\"%v\"", v)))
+                }
+            } else if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
+                // Assume value is a list of maps
+                var listValue []map[string]interface{}
+                err := json.Unmarshal([]byte(value), &listValue)
+                if err == nil {
+                    formattedList := formatHCLListOfMaps(listValue)
+                    mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedList))
+                } else {
+                    mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("\"%v\"", v)))
+                }
+            } else {
+                mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("\"%v\"", v)))
+            }
+        case bool:
+            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatBool(value)))
+        case float64:
+            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatFloat(value, 'f', -1, 64)))
+        case []interface{}:
+            formattedList := formatHCLList(value)
+            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedList))
+        case map[string]interface{}:
+            formattedMap := formatHCLMap(value)
+            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedMap))
+        default:
+            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("%v", v)))
+        }
+    }
+    return mainTf
+}
+
+func formatHCLMap(value map[string]interface{}) string {
+    mapPairs := make([]string, 0, len(value))
+    for mapKey, mapVal := range value {
+        formattedValue := formatHCLValue(mapVal)
+        mapPairs = append(mapPairs, fmt.Sprintf("%s = %s", mapKey, formattedValue))
+    }
+    return fmt.Sprintf("{\n%s\n}", strings.Join(mapPairs, "\n"))
+}
+
+func formatHCLList(value []interface{}) string {
+    listValues := make([]string, len(value))
+    for i, item := range value {
+        formattedValue := formatHCLValue(item)
+        listValues[i] = formattedValue
+    }
+    return fmt.Sprintf("[\n%s\n]", strings.Join(listValues, ",\n"))
+}
+
+func formatHCLListOfMaps(value []map[string]interface{}) string {
+    listValues := make([]string, len(value))
+    for i, item := range value {
+        formattedMap := formatHCLMap(item)
+        listValues[i] = formattedMap
+    }
+    return fmt.Sprintf("[\n%s\n]", strings.Join(listValues, ",\n"))
+}
+
+func formatHCLValue(value interface{}) string {
+    switch v := value.(type) {
+    case string:
+        return fmt.Sprintf("\"%v\"", v)
+    case bool:
+        return strconv.FormatBool(v)
+    case float64:
+        return strconv.FormatFloat(v, 'f', -1, 64)
+    case []interface{}:
+        return formatHCLList(v)
+    case map[string]interface{}:
+        return formatHCLMap(v)
+    default:
+        return fmt.Sprintf("%v", v)
+    }
 }
 
 func WriteMakeFile(configManager config.ConfigManager, mainTf []byte, workloadName string, runID string) error {
