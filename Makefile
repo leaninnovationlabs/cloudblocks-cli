@@ -22,11 +22,7 @@ install:
 	cp $(OUTPUT_DIR)/$(BINARY_NAME) $(INSTALL_DIR)
 	chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
 	echo 'export PATH=$$PATH:$(INSTALL_DIR)' >> ~/.bashrc
-	sudo mkdir -p /opt/work
-	sudo mkdir -p /opt/modules
-	sudo chown -R $$USER:$$USER /opt/work
-	sudo chown -R $$USER:$$USER /opt/modules
-	$(INSTALL_DIR)/$(BINARY_NAME) init --workdir=/opt/work/ --modulesdir=/opt/modules
+	$(INSTALL_DIR)/$(BINARY_NAME) init --workdir=$(INSTALL_DIR)/work/ --modulesdir=$(INSTALL_DIR)/modules
 	. ~/.bashrc
 
 clean:
