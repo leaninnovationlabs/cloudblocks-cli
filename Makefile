@@ -21,7 +21,7 @@ install:
 	mkdir -p $(INSTALL_DIR)
 	cp $(OUTPUT_DIR)/$(BINARY_NAME) $(INSTALL_DIR)
 	chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
-	echo 'export PATH=$$PATH:$(INSTALL_DIR)' >> ~/.zshrc
+	echo '\nexport PATH=$$PATH:$(INSTALL_DIR)' >> ~/.zshrc
 	$(INSTALL_DIR)/$(BINARY_NAME) init --workdir=$(INSTALL_DIR)/work/ --modulesdir=$(INSTALL_DIR)/modules
 	source ~/.zshrc
 
