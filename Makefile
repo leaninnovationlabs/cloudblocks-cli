@@ -10,7 +10,7 @@ OUTPUT_DIR=$(HOME)
 # Set the installation directory
 INSTALL_DIR=$(HOME)/.cloudblocks
 
-.PHONY: all build install clean
+.PHONY: all build install clean uninstall
 
 all: build
 
@@ -23,12 +23,13 @@ install:
 	chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
 	echo 'export PATH=$$PATH:$(INSTALL_DIR)' >> ~/.zshrc
 	$(INSTALL_DIR)/$(BINARY_NAME) init --workdir=$(INSTALL_DIR)/work/ --modulesdir=$(INSTALL_DIR)/modules
-	. ~/.zshrc
+	source ~/.zshrc
 
 clean:
 	rm -f $(OUTPUT_DIR)/$(BINARY_NAME)
+
 uninstall:
 	rm -rf $(INSTALL_DIR)
-	sed -i '/export PATH=\$\$PATH:\/usr\/local\/bin\/cloudblocks/d' ~/.zshrc
-	sed -i '/export PATH=\$\$PATH:$(INSTALL_DIR)/d' ~/.zshrc
-	. ~/.zshrc
+	sed -i '' '/export PATH=\/usr\/local\/bin\/cloudblocks/d' ~/.zshrc
+	sed -i '' '/export PATH=$(INSTALL_DIR)/d' ~/.zshrc
+	source ~/.zshrc
