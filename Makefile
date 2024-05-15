@@ -21,14 +21,14 @@ install:
 	mkdir -p $(INSTALL_DIR)
 	cp $(OUTPUT_DIR)/$(BINARY_NAME) $(INSTALL_DIR)
 	chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
-	echo 'export PATH=$PATH:$(INSTALL_DIR)' >> ~/.bashrc
+	echo 'export PATH=$PATH:$(INSTALL_DIR)' >> ~/.zshrc
 	$(INSTALL_DIR)/$(BINARY_NAME) init --workdir=$(INSTALL_DIR)/work/ --modulesdir=$(INSTALL_DIR)/modules
-	. ~/.bashrc
+	. ~/.zshrc
 
 clean:
 	rm -f $(OUTPUT_DIR)/$(BINARY_NAME)
 uninstall:
 	rm -rf $(INSTALL_DIR)
-	sed -i '/export PATH=\$\$PATH:\/usr\/local\/bin\/cloudblocks/d' ~/.bashrc
-	sed -i '/export PATH=\$\$PATH:$(INSTALL_DIR)/d' ~/.bashrc
-	. ~/.bashrc
+	sed -i '/export PATH=\$\$PATH:\/usr\/local\/bin\/cloudblocks/d' ~/.zshrc
+	sed -i '/export PATH=\$\$PATH:$(INSTALL_DIR)/d' ~/.zshrc
+	. ~/.zshrc
