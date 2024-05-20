@@ -9,8 +9,8 @@
 #   sg_tags          = { Name = "${var.ecs_sg_name}" }
 # }
 
-#ecs_sg_ingress_rules = [{ from_port = 8443, to_port = 8443, protocol = "tcp", security_groups = ["sg-0c3d633ae57ce2328"], description = "Allow inbound from 8443" },
-#{ from_port = 8080, to_port = 8080, protocol = "tcp", security_groups = ["sg-0c3d633ae57ce2328"], description = "Allow inbound from 8080" }]
+#ecs_sg_ingress_rules = [{ from_port = 8443, to_port = 8443, protocol = "tcp", security_groups = ["sg-"], description = "Allow inbound from 8443" },
+#{ from_port = 8080, to_port = 8080, protocol = "tcp", security_groups = ["sg"], description = "Allow inbound from 8080" }]
 
 
 module "ecs_service_sg" {
