@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	utils.CreateWorkloadDir(config.NewConfigManager("config.json"))
-	workload.InitializeWorkloadList(config.NewConfigManager("config.json"))
+	configManager := config.NewConfigManager(config.ConfigFile)
+	utils.CreateWorkloadDir(configManager)
+	workload.InitializeWorkloadList(configManager)
 	cmd.Execute()
 }

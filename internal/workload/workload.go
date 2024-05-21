@@ -210,11 +210,13 @@ func (m *Workload) UpdateStatus(configManager config.ConfigManager, status strin
 
 func WriteWorkloadList(configManager config.ConfigManager) error {
 	workloadsFile := filepath.Join(configManager.GetWorkDir(), "workloads.json")
+	fmt.Printf("WriteWorkloadList: %s\n", workloadsFile)
 	if CheckWorkloadList(configManager) {
 		return nil
 	}
 
 	if !utils.CheckWorkloadDir(configManager) {
+		fmt.Printf("Creating workload directory\n")
 		err := utils.CreateWorkloadDir(configManager)
 		if err != nil {
 			return fmt.Errorf("error creating workload directory: %v", err)

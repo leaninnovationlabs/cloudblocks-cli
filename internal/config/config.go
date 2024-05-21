@@ -89,9 +89,12 @@ func NewConfigManager(configFile string) ConfigManager {
 
 func (cm *ConfigManagerImpl) LoadConfig() (Config, error) {
 	file, err := os.Open(cm.configFile)
+	fmt.Printf("cm.configFile: %s\n", cm.configFile)
 	if err != nil {
+		fmt.Println(err)
 		if os.IsNotExist(err) {
 			// Config file doesn't exist, return default config
+			fmt.Println("Config file doesn't exist, returning default config")
 			path, _ := os.Getwd()
 			return Config{
 				Initialized:       false,
@@ -277,6 +280,8 @@ func (cm *ConfigManagerImpl) InitializeConfig() error {
         return cm.SaveConfig(config)
     }
 
+	ConfigFile = filepath.Join(InstallDir, "config.json")
+
     return nil
 }
 
@@ -286,6 +291,7 @@ func (cm *ConfigManagerImpl) GetWorkDir() string {
 		fmt.Printf("Error loading config: %v\n", err)
 		return ""
 	}
+	fmt.Printf("Workload directory: %s\n", config.Workloaddirectory)
 	return config.Workloaddirectory
 }
 
