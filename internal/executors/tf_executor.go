@@ -29,7 +29,7 @@ type ExecutorOutput struct {
 
 func CheckMainFile(workloadDir string, runID string) ExecutorOutput {
 	mainTFFile := filepath.Join(workloadDir, runID, "main.tf")
-	fmt.Println(mainTFFile)
+
 	_, err := os.Stat(mainTFFile)
 	if os.IsNotExist(err) {
 		return ExecutorOutput{Success: false, Error: fmt.Errorf("main.tf file not found for workload: %s and run ID: %s", workloadDir, runID)}
@@ -238,7 +238,6 @@ func DryRun(ctx context.Context, input ExecutorInput, workdir string) (ExecutorO
 // Execute runs the Terraform commands for the specified workload.
 func Execute(ctx context.Context, input ExecutorInput, workdir string) (ExecutorOutput, error) {
 	workloadDir := filepath.Join(workdir, input.UUID)
-	fmt.Println(workloadDir)
 	result := CheckMainFile(workloadDir, input.RunID)
 
 	// Check if the main.tf file exists
@@ -262,7 +261,6 @@ func Execute(ctx context.Context, input ExecutorInput, workdir string) (Executor
 }
 
 func Delete(ctx context.Context, cfmgr config.ConfigManager, input ExecutorInput, workdir string) (ExecutorOutput, error) {
-	fmt.Println(workdir)
 	result := CheckMainFile(workdir, input.RunID)
 
 	// Check if the main.tf file exists

@@ -8,8 +8,6 @@ import (
 	"cloudblockscli.com/internal/config"
 	"cloudblockscli.com/internal/utils"
 	"cloudblockscli.com/internal/workload"
-	// "os"
-	// "fmt"
 )
 
 func main() {

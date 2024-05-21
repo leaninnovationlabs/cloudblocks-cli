@@ -122,8 +122,7 @@ func (cm *ConfigManagerImpl) LoadConfig() (Config, error) {
 func (cm *ConfigManagerImpl) GetModuleConfig(moduleName string) (ModuleConfig, error) {
     modulesDir := cm.GetModulesDir()
     moduleConfigPath := filepath.Join(modulesDir, moduleName, "module.json")
-    fmt.Println(moduleConfigPath)
-    fmt.Println(moduleName)
+   
 
     file, err := os.Open(moduleConfigPath)
     if err != nil {

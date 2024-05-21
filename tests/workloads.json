@@ -1,9 +1,0 @@
-{ 
-  "workloads": [
-    "cloudblocks_instance.json",
-    "create_vpc.json",
-    "create_eks_cluster.json",
-    "eks_deploy_email_service.json",
-    "eks_deploy_email_service_update.json"
-  ]
-}
