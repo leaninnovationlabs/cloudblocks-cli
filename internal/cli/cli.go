@@ -28,7 +28,7 @@ import (
 func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resultCh chan<- executors.ExecutorOutput) {
 	defer wg.Done()
 
-	configManager := config.NewConfigManager("config.json")
+	configManager := config.NewConfigManager(config.ConfigFile)
 	if !configManager.IsInitialized() {
 		fmt.Println("cloudblocks environment not initialized.")
 		os.Exit(1)
@@ -147,7 +147,7 @@ func ExecuteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resul
 func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resultCh chan<- executors.ExecutorOutput) {
 	defer wg.Done()
 
-	configManager := config.NewConfigManager("config.json")
+	configManager := config.NewConfigManager(config.ConfigFile)
 	if !configManager.IsInitialized() {
 		fmt.Println("cloudblocks environment not initialized.")
 		os.Exit(1)
@@ -241,7 +241,7 @@ func DeleteCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 func ListCommand(cmd *cobra.Command, wg *sync.WaitGroup, resultCh chan<- executors.ExecutorOutput) {
 	defer wg.Done()
 
-	configManager := config.NewConfigManager("config.json")
+	configManager := config.NewConfigManager(config.ConfigFile)
 	if !configManager.IsInitialized() {
 		fmt.Println("cloudblocks environment not initialized.")
 		resultCh <- executors.ExecutorOutput{Success: false, Error: fmt.Errorf("cloudblocks environment not initialized")}
@@ -274,7 +274,7 @@ func ListCommand(cmd *cobra.Command, wg *sync.WaitGroup, resultCh chan<- executo
 func DryRunCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, resultCh chan<- executors.ExecutorOutput) {
 	defer wg.Done()
 
-	configManager := config.NewConfigManager("config.json")
+	configManager := config.NewConfigManager(config.ConfigFile)
 	if !configManager.IsInitialized() {
 		fmt.Println("cloudblocks environment not initialized.")
 		os.Exit(1)
@@ -365,7 +365,7 @@ func DryRunCommand(cmd *cobra.Command, args []string, wg *sync.WaitGroup, result
 func ListWorkloadsCommand(cmd *cobra.Command, wg *sync.WaitGroup, resultCh chan<- executors.ExecutorOutput) {
 	defer wg.Done()
 
-	configManager := config.NewConfigManager("config.json")
+	configManager := config.NewConfigManager(config.ConfigFile)
 	if !configManager.IsInitialized() {
 		resultCh <- executors.ExecutorOutput{Success: false, Error: fmt.Errorf("cloudblocks environment not initialized")}
 		os.Exit(1)

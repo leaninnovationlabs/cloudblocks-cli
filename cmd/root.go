@@ -9,14 +9,16 @@ import (
 	"cloudblockscli.com/internal/config"
 	"cloudblockscli.com/internal/executors"
 	"cloudblockscli.com/internal/utils"
+
 	// "cloudblockscli.com/internal/workload"
 	// "context"
 	// "encoding/json"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/spf13/cobra"
 	// "time"
 )
 
@@ -100,7 +102,7 @@ var envAddCmd = &cobra.Command{
 	Short: "Add a new environment",
 	Long:  "Adds a new environment to the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		name, _ := cmd.Flags().GetString("name")
 		bucket, _ := cmd.Flags().GetString("bucket")
@@ -121,7 +123,7 @@ var envUpdateCmd = &cobra.Command{
 	Short: "Update an existing environment",
 	Long:  "Updates an existing environment in the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		name, _ := cmd.Flags().GetString("name")
 		bucket, _ := cmd.Flags().GetString("bucket")
@@ -142,7 +144,7 @@ var envListCmd = &cobra.Command{
 	Short: "List available environments",
 	Long:  "Lists the available environments from the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		environments, err := configManager.ListEnvironments()
 		if err != nil {
@@ -166,7 +168,7 @@ var envDeleteCmd = &cobra.Command{
 	Short: "Delete an environment",
 	Long:  "Deletes an environment from the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		name, _ := cmd.Flags().GetString("name")
 
@@ -191,7 +193,7 @@ var addCmd = &cobra.Command{
 	Short: "Add a new cloudblock module",
 	Long:  "Adds a new cloudblock module to the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		// Get the name and version from the command line flags
 		name, _ := cmd.Flags().GetString("name")
@@ -229,7 +231,7 @@ var updateCmd = &cobra.Command{
 	Short: "Update an existing cloudblock module",
 	Long:  "Updates an existing cloudblock module in the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		// Get the name and version from the command line flags
 		name, _ := cmd.Flags().GetString("name")
@@ -273,7 +275,7 @@ var deleteModuleCmd = &cobra.Command{
 	Short: "Delete a cloudblock module",
 	Long:  "Deletes a cloudblock module from the config.json file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		configManager := config.NewConfigManager("config.json")
+		configManager := config.NewConfigManager(config.ConfigFile)
 
 		// Get the name from the command line flag
 		name, _ := cmd.Flags().GetString("name")
