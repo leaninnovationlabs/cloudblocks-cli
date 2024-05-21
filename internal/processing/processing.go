@@ -30,6 +30,7 @@ type VariablesJSON struct {
 
 func ReadTemplate(configManager config.ConfigManager, moduleName string) ([]byte, error) {
 	filePath := configManager.GetModulesDir() + "/" + moduleName + templateFileName
+	fmt.Println(filePath)
 	mainTf, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading main.tf: %v", err)
@@ -68,22 +69,59 @@ func ReplaceVariables(mainTf []byte, variables map[string]interface{}) []byte {
                     mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("\"%v\"", v)))
                 }
             } else if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
-                // Assume value is a list of maps
-                var listValue []map[string]interface{}
+                // Assume value is a list of maps or a list of strings
+                var listValue []interface{}
                 err := json.Unmarshal([]byte(value), &listValue)
                 if err == nil {
-                    formattedList := formatHCLListOfMaps(listValue)
-                    mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedList))
+                    if len(listValue) > 0 {
+                        if _, ok := listValue[0].(map[string]interface{}); ok {
+                            // List of maps
+                            var listOfMaps []map[string]interface{}
+                            for _, item := range listValue {
+                                if mapItem, ok := item.(map[string]interface{}); ok {
+                                    listOfMaps = append(listOfMaps, mapItem)
+                                }
+                            }
+                            formattedList := formatHCLListOfMaps(listOfMaps)
+                            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedList))
+                        } else if _, ok := listValue[0].(string); ok {
+                            // List of strings
+                            var listOfStrings []string
+                            for _, item := range listValue {
+                                if stringItem, ok := item.(string); ok {
+                                    listOfStrings = append(listOfStrings, stringItem)
+                                }
+                            }
+                            listOfInterfaces := make([]interface{}, len(listOfStrings))
+                            for i, v := range listOfStrings {
+                                listOfInterfaces[i] = v
+                            }
+                            formattedList := formatHCLList(listOfInterfaces)
+                            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedList))
+                        } else {
+                            // Unknown list type
+                            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("%v", v)))
+                        }
+                    } else {
+                        // Empty list
+                        mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte("[]"))
+                    }
                 } else {
                     mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("\"%v\"", v)))
                 }
+            } else if value == "null" {
+                // Null value
+                mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte("null"))
             } else {
+                // Regular string value
                 mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(fmt.Sprintf("\"%v\"", v)))
             }
         case bool:
             mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatBool(value)))
         case float64:
             mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.FormatFloat(value, 'f', -1, 64)))
+        case int:
+            mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(strconv.Itoa(value)))
         case []interface{}:
             formattedList := formatHCLList(value)
             mainTf = bytes.ReplaceAll(mainTf, []byte(placeholder), []byte(formattedList))
@@ -263,6 +301,7 @@ func addSourceBlock(configManager config.ConfigManager, wl *workload.Workload, m
 }
 
 func processTerraformConfig(configManager config.ConfigManager, wl *workload.Workload, moduleConfig config.ModuleConfig, workloadName, runID string) error {
+	fmt.Println(moduleConfig.Name)
 	mainTf, err := ReadTemplate(configManager, moduleConfig.Name)
 	if err != nil {
 		return err

@@ -117,25 +117,25 @@ func (cm *ConfigManagerImpl) LoadConfig() (Config, error) {
 }
 
 func (cm *ConfigManagerImpl) GetModuleConfig(moduleName string) (ModuleConfig, error) {
-	modulesDir := cm.GetModulesDir()
-	moduleConfigPath := filepath.Join(modulesDir, moduleName, "module.json")
-	fmt.Println(moduleConfigPath)
-	fmt.Println(moduleName)
+    modulesDir := cm.GetModulesDir()
+    moduleConfigPath := filepath.Join(modulesDir, moduleName, "module.json")
+    fmt.Println(moduleConfigPath)
+    fmt.Println(moduleName)
 
-	file, err := os.Open(moduleConfigPath)
-	if err != nil {
-		return ModuleConfig{}, fmt.Errorf("error opening module.json for module %s: %v", moduleName, err)
-	}
-	defer file.Close()
+    file, err := os.Open(moduleConfigPath)
+    if err != nil {
+        return ModuleConfig{}, fmt.Errorf("error opening module.json for module %s: %v", moduleName, err)
+    }
+    defer file.Close()
 
-	var moduleConfig ModuleConfig
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&moduleConfig)
-	if err != nil {
-		return ModuleConfig{}, fmt.Errorf("error decoding module.json for module %s: %v", moduleName, err)
-	}
+    var moduleConfig ModuleConfig
+    decoder := json.NewDecoder(file)
+    err = decoder.Decode(&moduleConfig)
+    if err != nil {
+        return ModuleConfig{}, fmt.Errorf("error decoding module.json for module %s: %v", moduleName, err)
+    }
 
-	return moduleConfig, nil
+    return moduleConfig, nil
 }
 
 func (cm *ConfigManagerImpl) GetBucketByEnv(env string) string {
@@ -257,32 +257,27 @@ func (cm *ConfigManagerImpl) SaveConfig(config Config) error {
 }
 
 func (cm *ConfigManagerImpl) InitializeConfig() error {
-	config, err := cm.LoadConfig()
-	if err != nil {
-		return err
-	}
+    config, err := cm.LoadConfig()
+    if err != nil {
+        return err
+    }
 
-	if !config.Initialized {
-		execPath, err := os.Executable()
-		if err != nil {
-			return err
-		}
-		installDir := filepath.Dir(execPath)
+    if !config.Initialized {
+        config.Initialized = true
+        config.RootPath = InstallDir
+        config.Workloaddirectory = filepath.Join(InstallDir, "work")
+        config.Modulesdirectory = filepath.Join(InstallDir, "modules")
+        config.Env = map[string]EnvConfig{
+            "dev": {
+                Bucket: "",
+                Region: "",
+            },
+        }
+        config.ModulesList = []CloudblockConfig{}
+        return cm.SaveConfig(config)
+    }
 
-		config.Initialized = true
-		config.RootPath = installDir
-		config.Workloaddirectory = filepath.Join(installDir, "./work")
-		config.Modulesdirectory = filepath.Join(installDir, "./modules")
-		config.Env = map[string]EnvConfig{
-			"dev": {
-				Bucket: "",
-				Region: "",
-			}}
-		config.ModulesList = []CloudblockConfig{}
-		return cm.SaveConfig(config)
-	}
-
-	return nil
+    return nil
 }
 
 func (cm *ConfigManagerImpl) GetWorkDir() string {
