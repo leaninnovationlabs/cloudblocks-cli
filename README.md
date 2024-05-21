@@ -3,14 +3,13 @@
 Cloudblocks is a command-line interface (CLI) tool for managing and interacting with cloud resource workloads. It provides a set of commands to initialize the environment, manage modules, execute workloads, and delete workloads. A workload is a single execution of a terraform module or script which creates cloud resources.
 
 ## Installation
-
-***TO DO: Add script to do install
+Requirements: Linux or MacOS and Make
 
 To install the Cloudblocks CLI tool, follow these steps:
 
-1. Download the binary for your operating system from the official Cloudblocks releases page.
-2. Extract the binary to a directory of your choice.
-3. Add the directory to your system's PATH environment variable.
+From the root of the cloudblocks-cli directory, run the following commands:
+1. make build
+2. make install
 
 ## Usage
 
