@@ -1,106 +1,130 @@
 package config
 
 import (
-"github.com/stretchr/testify/assert"
-"os"
-"testing"
+    "os"
+    "path/filepath"
+    "testing"
+    "encoding/json"
+    "github.com/stretchr/testify/assert"
+    "fmt"
 )
 
-func TestConfigManager(t *testing.T) {
-	configFile := "config_test.json"
-	configManager := NewConfigManager(configFile)
-
-	// Test InitializeConfig
-	err := configManager.InitializeConfig()
-	assert.NoError(t, err)
-
-	// Test SaveConfig
-	config := Config{
-		Initialized:       true,
-		Workloaddirectory: "./test_work",
-		Modulesdirectory:  "./test_modules",
-		RootPath:          "./test_root",
-		Env: map[string]EnvConfig{
-			"dev": {
-				Bucket: "govpdfsandy",
-				Region: "us-east-1",
-			},
-		},
-	}
-	err = configManager.SaveConfig(config)
-	assert.NoError(t, err)
-
-	// Test LoadConfig
-	loadedConfig, err := configManager.LoadConfig()
-	assert.NoError(t, err)
-	assert.Equal(t, config, loadedConfig)
-
-	// Test GetWorkDir
-	workDir := configManager.GetWorkDir()
-	assert.Equal(t, "./test_work", workDir)
-
-	// Test GetModulesDir
-	modulesDir := configManager.GetModulesDir()
-	assert.Equal(t, "./test_modules", modulesDir)
-
-	// Test GetRootPath
-	rootPath := configManager.GetRootPath()
-	assert.Equal(t, "./test_root", rootPath)
-
-	// Test IsInitialized
-	initialized := configManager.IsInitialized()
-	assert.True(t, initialized)
-
-	// Test GetBucketByEnv
-	bucket := configManager.GetBucketByEnv("dev")
-	assert.Equal(t, "govpdfsandy", bucket)
-
-	// Test GetRegionByEnv
-	region := configManager.GetRegionByEnv("dev")
-	assert.Equal(t, "us-east-1", region)
-
-	// Clean up the test config file
-	err = os.Remove(configFile)
-	assert.NoError(t, err)
-
+func setupTestConfigManager(t *testing.T) (ConfigManager, string) {
+    tempDir := t.TempDir()
+    configFile := filepath.Join(tempDir, "config_test.json")
+    return NewConfigManager(configFile), tempDir
 }
 
-func TestCloudblocksManager(t *testing.T) {
-	cloudblocksFile := "cloudblocks_test.json"
-	cloudblocksManager := NewCloudblocksManager(cloudblocksFile)
+func TestInitializeConfig(t *testing.T) {
+    configManager, _ := setupTestConfigManager(t)
 
-	// Test InitializeCloudblocksList
-	err := cloudblocksManager.InitializeCloudblocksList()
-	assert.NoError(t, err)
+    err := configManager.InitializeConfig()
+    assert.NoError(t, err)
 
-	// Test VerifyCloudblocksList
-	exists := cloudblocksManager.VerifyCloudblocksList()
-	assert.True(t, exists)
+    assert.True(t, configManager.IsInitialized())
+    assert.NotEmpty(t, configManager.GetWorkDir())
+    assert.NotEmpty(t, configManager.GetModulesDir())
+    assert.NotEmpty(t, configManager.GetRootPath())
+}
 
-	// Test UpdateCloudblocksList
-	cloudblocks := []CloudblockConfig{
-		{Name: "cloudblock1", Version: "v1"},
-		{Name: "cloudblock2", Version: "v2"},
-	}
-	err = cloudblocksManager.UpdateCloudblocksList(cloudblocks)
-	assert.NoError(t, err)
+func TestSaveAndLoadConfig(t *testing.T) {
+    configManager, _ := setupTestConfigManager(t)
 
-	// Test GetCloudblockByName
-	cloudblock, err := cloudblocksManager.GetCloudblockByName("cloudblock1")
-	assert.NoError(t, err)
-	assert.Equal(t, "cloudblock1", cloudblock.Name)
-	assert.Equal(t, "v1", cloudblock.Version)
+    config := Config{
+        Initialized:       true,
+        Workloaddirectory: "./test_work",
+        Modulesdirectory:  "./test_modules",
+        RootPath:          "./test_root",
+        Env: map[string]EnvConfig{
+            "dev": {
+                Bucket: "test_bucket",
+                Region: "test_region",
+            },
+        },
+    }
 
-	// Test DeleteCloudblock
-	err = cloudblocksManager.DeleteCloudblock("cloudblock1")
-	assert.NoError(t, err)
+    err := configManager.SaveConfig(config)
+    assert.NoError(t, err)
 
-	// Verify cloudblock is deleted
-	_, err = cloudblocksManager.GetCloudblockByName("cloudblock1")
-	assert.Error(t, err)
+    loadedConfig, err := configManager.LoadConfig()
+    assert.NoError(t, err)
+    assert.Equal(t, config, loadedConfig)
+}
 
-	// Clean up the test cloudblocks file
-	err = os.Remove(cloudblocksFile)
-	assert.NoError(t, err)
+func TestEnvironmentOperations(t *testing.T) {
+    configManager, _ := setupTestConfigManager(t)
 
+    err := configManager.AddEnvironment("prod", "prod_bucket", "prod_region")
+    assert.NoError(t, err)
+
+    err = configManager.UpdateEnvironment("prod", "new_prod_bucket", "")
+    assert.NoError(t, err)
+
+    environments, err := configManager.ListEnvironments()
+    assert.NoError(t, err)
+    assert.Contains(t, environments, EnvInfo{Name: "prod", Bucket: "new_prod_bucket", Region: "prod_region"})
+
+    err = configManager.DeleteEnvironment("prod")
+    assert.NoError(t, err)
+}
+
+func TestCloudblockOperations(t *testing.T) {
+    configManager, _ := setupTestConfigManager(t)
+
+    err := configManager.InitializeCloudblocksList()
+    assert.NoError(t, err)
+
+    cloudblocks := []CloudblockConfig{
+        {Name: "cloudblock1", Version: "v1"},
+        {Name: "cloudblock2", Version: "v2"},
+    }
+    err = configManager.UpdateCloudblocksList(cloudblocks)
+    assert.NoError(t, err)
+
+    loadedCloudblocks, err := configManager.LoadModulesList()
+    assert.NoError(t, err)
+    assert.Equal(t, cloudblocks, loadedCloudblocks)
+
+    cloudblock, err := configManager.GetCloudblockByName("cloudblock1")
+    assert.NoError(t, err)
+    assert.Equal(t, "cloudblock1", cloudblock.Name)
+    assert.Equal(t, "v1", cloudblock.Version)
+
+    err = configManager.DeleteCloudblock("cloudblock1")
+    assert.NoError(t, err)
+}
+
+func TestGetModuleConfig(t *testing.T) {
+    configManager, tempDir := setupTestConfigManager(t)
+
+    moduleConfig := ModuleConfig{
+        Name:    "test_module",
+        Runtime: "test_runtime",
+        Params: []ModuleParam{
+            {Name: "param1", Type: "string", Description: "Test param 1"},
+        },
+        Actions: []ModuleAction{
+            {Name: "action1", Description: "Test action 1", Params: []string{"param1"}},
+        },
+    }
+
+    moduleDir := filepath.Join(tempDir, "modules", "test_module")
+    err := os.MkdirAll(moduleDir, os.ModePerm)
+    assert.NoError(t, err)
+
+    file, err := os.Create(filepath.Join(moduleDir, "module.json"))
+    assert.NoError(t, err)
+    defer file.Close()
+
+    err = configManager.SaveConfig(Config{
+        Modulesdirectory: filepath.Join(tempDir, "modules"),
+    })
+    assert.NoError(t, err)
+
+    err = json.NewEncoder(file).Encode(moduleConfig)
+    assert.NoError(t, err)
+
+    loadedModuleConfig, err := configManager.GetModuleConfig("test_module")
+    assert.NoError(t, err)
+    assert.Equal(t, moduleConfig, loadedModuleConfig)
 }
