@@ -35,7 +35,7 @@ jobs:
       
     - name: Verify the file in S3
       run: |
-        if aws s3 ls s3://cloudblocks-binaries/cloudblocks; then
+        if aws s3 ls s3://cloudblocks-binaries/cli/cloudblocks; then
           echo "Binary uploaded successfully to S3"
         else
           echo "Binary not found in S3"
